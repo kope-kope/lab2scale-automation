@@ -1,0 +1,369 @@
+# =============================================================================
+# Energy Storage Research Monitoring - Source Configuration
+# =============================================================================
+# Categories: academic_labs, government_programs, arxiv, journals,
+#             news_sources, industry_databases, startup_trackers
+# Methods: rss, api, web_scrape
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. ACADEMIC LABS
+# ---------------------------------------------------------------------------
+academic_labs:
+
+  - name: "MIT - Chiang Group (Electrochemical Energy Storage)"
+    url: "https://dmse.mit.edu/people/faculty/yet-ming-chiang/"
+    method: web_scrape
+    focus: "electrochemical storage materials, solid-state batteries, decarbonization"
+    notes: "Yet-Ming Chiang's group. Also check publications list."
+
+  - name: "MIT - Group Sadoway (Extreme Electrochemistry)"
+    url: "http://sadoway.mit.edu/"
+    method: web_scrape
+    focus: "liquid metal batteries, molten salt electrolysis, grid-scale storage"
+    alt_urls:
+      - "http://sadoway.mit.edu/research"
+
+  - name: "MIT - Center for Electrochemical Energy Storage (CEES)"
+    url: "https://cees-www.mit.edu/"
+    method: web_scrape
+    focus: "electrochemical energy storage, cross-disciplinary battery research"
+
+  - name: "Stanford - Yi Cui Group"
+    url: "https://web.stanford.edu/group/cui_group/"
+    method: web_scrape
+    focus: "nanomaterials for batteries, lithium-metal, solid-state, sulfur cathodes"
+
+  - name: "UC Berkeley - Ceder Group (Computational Materials)"
+    url: "https://ceder.berkeley.edu/"
+    method: web_scrape
+    focus: "computational materials design, cathode discovery, materials genome"
+
+  - name: "UC Berkeley - Balsara Lab (Polymer Electrolytes)"
+    url: "https://balsaralab.berkeley.edu/"
+    method: web_scrape
+    focus: "polymer electrolytes, solid-state lithium batteries"
+
+  - name: "UC Berkeley - McCloskey Lab (Electrochemistry)"
+    url: "http://www.mccloskeylab.com/res"
+    method: web_scrape
+    focus: "solid-state batteries, metal-air batteries, Li-ion fast charging"
+
+  - name: "UT Austin - Battery Research Group (Goodenough Legacy)"
+    url: "https://batteries.engr.utexas.edu/"
+    method: web_scrape
+    focus: "solid-state electrolytes, cathode materials, potassium-ion batteries"
+    alt_urls:
+      - "https://batteries.engr.utexas.edu/research"
+      - "https://batteries.engr.utexas.edu/about"
+
+  - name: "LBNL - The Battery Group"
+    url: "https://batterygroup.lbl.gov/"
+    method: web_scrape
+    focus: "fundamental battery materials, processes, electrochemistry"
+
+  - name: "Argonne - JCESR (Joint Center for Energy Storage Research)"
+    url: "https://www.jcesr.org/about/"
+    method: web_scrape
+    focus: "beyond-lithium-ion, flow batteries, multivalent, DOE Energy Hub"
+    alt_urls:
+      - "https://www.anl.gov/jcesr"
+
+# ---------------------------------------------------------------------------
+# 2. GOVERNMENT PROGRAMS
+# ---------------------------------------------------------------------------
+government_programs:
+
+  # -- DOE --
+  - name: "DOE - Office of Electricity Energy Storage"
+    url: "https://www.energy.gov/oe/energy-storage"
+    method: web_scrape
+    focus: "grid-scale storage policy, programs, deployments"
+
+  - name: "DOE - Energy Storage Grand Challenge"
+    url: "https://www.energy.gov/energy-storage-grand-challenge/energy-storage-grand-challenge"
+    method: web_scrape
+    focus: "DOE-wide storage roadmap, cost targets, technology milestones"
+
+  - name: "DOE - Long-Duration Energy Storage (OCED)"
+    url: "https://www.energy.gov/cmei/oced/long-duration-energy-storage"
+    method: web_scrape
+    focus: "LDES demonstrations, funding announcements"
+
+  - name: "DOE - EERE Hydrogen Storage"
+    url: "https://www.energy.gov/eere/fuelcells/hydrogen-storage"
+    method: web_scrape
+    focus: "hydrogen storage materials, systems, R&D targets"
+
+  # -- ARPA-E --
+  - name: "ARPA-E - Programs Overview"
+    url: "https://arpa-e.energy.gov/programs-and-initiatives/program-overview"
+    method: web_scrape
+    focus: "transformational energy storage programs (RANGE, IONICS, DAYS, etc.)"
+    alt_urls:
+      - "https://arpa-e.energy.gov/technologies/programs?page=1"
+
+  # -- National Labs --
+  - name: "NREL - Energy Storage Research"
+    url: "https://www.nrel.gov/storage/"
+    method: web_scrape
+    focus: "battery testing, grid integration, techno-economic analysis"
+    alt_urls:
+      - "https://www.nrel.gov/storage/research"
+
+  - name: "Argonne - Energy Storage Division"
+    url: "https://www.anl.gov/pse/energy-storage"
+    method: web_scrape
+    focus: "battery materials, cell design, manufacturing R&D"
+    alt_urls:
+      - "https://www.anl.gov/topic/batteries"
+
+  - name: "PNNL - Energy Storage"
+    url: "https://www.pnnl.gov/energy-storage"
+    method: web_scrape
+    focus: "flow batteries, aqueous systems, grid storage launchpad"
+    alt_urls:
+      - "https://energystorage.pnnl.gov/"
+      - "https://www.pnnl.gov/electrochemical-energy-storage"
+      - "https://www.pnnl.gov/projects/grid-storage-launchpad"
+
+  - name: "Sandia - DOE OE Energy Storage Program"
+    url: "https://www.sandia.gov/ess/"
+    method: web_scrape
+    focus: "storage safety, grid integration analysis, system performance"
+    alt_urls:
+      - "https://energy.sandia.gov/programs/energy-storage/"
+
+# ---------------------------------------------------------------------------
+# 3. arXiv CATEGORIES
+# ---------------------------------------------------------------------------
+# Feed format: https://rss.arxiv.org/rss/{category}
+# Combine with +: https://rss.arxiv.org/rss/cat1+cat2
+arxiv:
+
+  - name: "arXiv - Condensed Matter: Materials Science"
+    url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    method: rss
+    focus: "battery materials, solid electrolytes, electrode materials"
+    notes: "Primary category for battery materials papers"
+
+  - name: "arXiv - Physics: Chemical Physics"
+    url: "https://rss.arxiv.org/rss/physics.chem-ph"
+    method: rss
+    focus: "electrochemistry, reaction mechanisms, interfaces"
+
+  - name: "arXiv - Physics: Applied Physics"
+    url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    focus: "applied battery/storage device physics, supercapacitors"
+
+  - name: "arXiv - Condensed Matter: Mesoscale and Nanoscale Physics"
+    url: "https://rss.arxiv.org/rss/cond-mat.mes-hall"
+    method: rss
+    focus: "nanostructured electrodes, quantum dots for energy"
+
+  - name: "arXiv - Condensed Matter: Soft Condensed Matter"
+    url: "https://rss.arxiv.org/rss/cond-mat.soft"
+    method: rss
+    focus: "polymer electrolytes, gel electrolytes, ionic liquids"
+
+  - name: "arXiv - Combined Energy Storage Feed"
+    url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci+physics.chem-ph+physics.app-ph"
+    method: rss
+    focus: "combined feed for broader coverage"
+    notes: "Use this to reduce individual feed polling"
+
+# ---------------------------------------------------------------------------
+# 4. PUBLICATIONS & JOURNALS
+# ---------------------------------------------------------------------------
+journals:
+
+  - name: "Nature Energy"
+    url: "https://www.nature.com/nenergy.rss"
+    method: rss
+    focus: "high-impact energy research including storage"
+    homepage: "https://www.nature.com/nenergy/"
+
+  - name: "Joule (Cell Press)"
+    url: "https://www.cell.com/joule/rss"
+    method: rss
+    focus: "energy science and policy, storage breakthroughs"
+    homepage: "https://www.cell.com/joule/home"
+
+  - name: "Journal of The Electrochemical Society"
+    url: "https://iopscience.iop.org/journal/rss/1945-7111"
+    method: rss
+    focus: "electrochemistry, batteries, fuel cells, supercapacitors"
+    homepage: "https://iopscience.iop.org/journal/1945-7111"
+
+  - name: "ACS Energy Letters"
+    url: "http://feeds.feedburner.com/acs/aelccp"
+    method: rss
+    focus: "energy storage, conversion, high-impact letters"
+    homepage: "https://pubs.acs.org/journal/aelccp"
+    notes: "FeedBurner URL; also check pubs.acs.org/page/follow.html for updates"
+
+  - name: "Advanced Energy Materials (Wiley)"
+    url: "http://onlinelibrary.wiley.com/rss/journal/10.1002/(ISSN)1614-6840"
+    method: rss
+    focus: "energy harvesting, conversion, storage materials"
+    homepage: "https://advanced.onlinelibrary.wiley.com/journal/16146840"
+
+# ---------------------------------------------------------------------------
+# 5. NEWS SOURCES
+# ---------------------------------------------------------------------------
+news_sources:
+
+  - name: "Energy Storage News"
+    url: "https://www.energy-storage.news/feed/"
+    method: rss
+    focus: "dedicated energy storage industry news, policy, deployments"
+    homepage: "https://www.energy-storage.news/"
+
+  - name: "Electrek"
+    url: "https://electrek.co/feed/"
+    method: rss
+    focus: "EVs, battery tech, clean energy, Tesla"
+    homepage: "https://electrek.co/"
+    notes: "Broad EV/clean energy; filter for storage-related posts"
+
+  - name: "CleanTechnica"
+    url: "https://cleantechnica.com/feed/"
+    method: rss
+    focus: "solar, wind, storage, EVs, clean energy market trends"
+    homepage: "https://cleantechnica.com/"
+
+  - name: "Canary Media"
+    url: "https://www.canarymedia.com/rss-feed"
+    method: rss
+    focus: "clean energy transition, long-duration storage, grid"
+    homepage: "https://www.canarymedia.com/"
+    notes: "Successor to GreenTech Media editorial team"
+    category_pages:
+      - "https://www.canarymedia.com/articles/energy-storage"
+      - "https://www.canarymedia.com/articles/long-duration-energy-storage"
+
+  - name: "GreenTech Media (archived/legacy)"
+    url: "https://www.greentechmedia.com/about/subscribe/rss"
+    method: rss
+    focus: "solar, storage, grid edge (now part of Wood Mackenzie)"
+    homepage: "https://www.greentechmedia.com/"
+    notes: "GTM merged into Canary Media; legacy RSS may still work"
+
+  - name: "Utility Dive - Energy Storage"
+    url: "https://www.utilitydive.com/feeds/news/"
+    method: rss
+    focus: "utility-scale storage, grid policy, regulatory"
+    homepage: "https://www.utilitydive.com/topic/storage/"
+
+  - name: "MIT News - Energy"
+    url: "https://news.mit.edu/rss/topic/energy"
+    method: rss
+    focus: "MIT energy research news, battery breakthroughs"
+    homepage: "https://news.mit.edu/topic/renewable-energy"
+
+# ---------------------------------------------------------------------------
+# 6. INDUSTRY DATABASES
+# ---------------------------------------------------------------------------
+industry_databases:
+
+  - name: "Battery Archive"
+    url: "https://www.batteryarchive.org/"
+    method: web_scrape
+    focus: "open-access battery cycling data, degradation models"
+    data_url: "https://batteryarchive.org/data.html"
+    notes: "Open-source; based on Redash ETL. Updated every 2 months."
+
+  - name: "LDES Council (Long Duration Energy Storage Council)"
+    url: "https://ldescouncil.com/"
+    method: web_scrape
+    focus: "LDES market reports, policy advocacy, 60+ members globally"
+
+  - name: "American Clean Power Association (formerly ESA)"
+    url: "https://cleanpower.org/"
+    method: web_scrape
+    focus: "US energy storage policy, market data, deployments"
+    notes: "Energy Storage Association (ESA) merged into ACP"
+    legacy_url: "http://energystorageassociationarchive.org/"
+
+  - name: "Volta Foundation - Annual Battery Report"
+    url: "https://volta.foundation/"
+    method: web_scrape
+    focus: "comprehensive annual battery industry analysis"
+    report_urls:
+      - "https://volta.foundation/battery-report-2025/"
+      - "https://volta.foundation/battery-report-2024/"
+
+  - name: "Crunchbase - Energy Storage Companies"
+    url: "https://www.crunchbase.com/hub/energy-storage-companies"
+    method: web_scrape  # requires API key for programmatic access
+    focus: "startup funding, M&A, company profiles"
+    alt_urls:
+      - "https://www.crunchbase.com/hub/energy-storage-startups"
+      - "https://www.crunchbase.com/hub/united-states-energy-storage-companies"
+    notes: "Crunchbase API available (paid) for structured data access"
+
+  - name: "DOE - Energy Storage Grand Challenge Roadmap"
+    url: "https://www.energy.gov/energy-storage-grand-challenge/articles/energy-storage-grand-challenge-roadmap"
+    method: web_scrape
+    focus: "DOE cost/performance targets, technology assessments"
+
+  - name: "PNNL - Energy Storage Reports"
+    url: "https://energystorage.pnnl.gov/reports.asp"
+    method: web_scrape
+    focus: "cost and performance assessments, grid storage data"
+
+# ---------------------------------------------------------------------------
+# 7. STARTUP TRACKERS (VCs, Accelerators, Incubators)
+# ---------------------------------------------------------------------------
+startup_trackers:
+
+  # -- VC / Investment Funds --
+  - name: "Volta Energy Technologies (Argonne spinout VC)"
+    url: "https://volta.vc/"
+    method: web_scrape
+    focus: "battery and energy storage startups, deep-tech diligence"
+    portfolio_url: "https://volta.vc/updates/"
+    notes: "Spun out of Argonne National Lab; ~20 portfolio companies"
+
+  - name: "Breakthrough Energy Ventures"
+    url: "https://www.breakthroughenergy.org/portfolio/index.html"
+    method: web_scrape
+    focus: "climate tech including storage (Form Energy, QuantumScape, ESS)"
+    homepage: "https://www.breakthroughenergy.org/"
+
+  - name: "Clean Energy Ventures"
+    url: "https://cleanenergyventures.com/portfolio/"
+    method: web_scrape
+    focus: "early-stage clean energy including BESS, thermal, hydrogen"
+    notes: "$415M+ AUM, 50+ portfolio companies"
+
+  # -- Accelerators & Incubators --
+  - name: "Activate (formerly Cyclotron Road)"
+    url: "https://activate.org/activate-fellows"
+    method: web_scrape
+    focus: "hard-tech fellows, many energy storage startups"
+    homepage: "https://activate.org/"
+    notes: "Born at Berkeley Lab; now multi-site (Berkeley, Cambridge, Houston, NYC)"
+
+  - name: "ChargeUp Accelerator (New Energy New York)"
+    url: "https://neny.org/programs/chargeup-accelerator/"
+    method: web_scrape
+    focus: "dedicated battery/energy storage accelerator, $25K + mentorship"
+    notes: "Nation's first battery-only accelerator"
+
+  - name: "New Energy Nexus"
+    url: "https://www.newenergynexus.com/"
+    method: web_scrape
+    focus: "global clean energy incubator network, battery programs"
+
+  # -- Tracking / Intelligence --
+  - name: "PitchBook - Breakthrough Energy"
+    url: "https://pitchbook.com/profiles/investor/168856-57"
+    method: web_scrape
+    focus: "deal data, valuations, co-investors (requires subscription)"
+
+  - name: "Tracxn - Clean Energy Ventures"
+    url: "https://tracxn.com/d/venture-capital/cleanenergyventures/"
+    method: web_scrape
+    focus: "portfolio tracking, investment trends"

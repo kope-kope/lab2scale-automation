@@ -1,0 +1,396 @@
+# =============================================================================
+# Power Electronics Research Monitoring - Source List
+# Generated: 2026-05-28
+# Topics: GaN, SiC, WBG semiconductors, inverters, converters, motor drives,
+#          power modules, grid-tied power electronics
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. ACADEMIC LABS
+# -----------------------------------------------------------------------------
+academic_labs:
+
+  - name: "MIT LEES - Laboratory for Electromagnetic and Electronic Systems"
+    url: "https://lees-rle.mit.edu/"
+    method: web_scrape
+    notes: "Part of MIT RLE. Power electronics, control, electromagnetics."
+
+  - name: "Virginia Tech CPES - Center for Power Electronics Systems"
+    url: "https://cpes.vt.edu/"
+    method: web_scrape
+    notes: "NSF ERC. One of the top power electronics research centers globally."
+
+  - name: "University of Tennessee CURENT"
+    url: "https://curent.utk.edu/"
+    method: web_scrape
+    news_url: "https://curent.utk.edu/news/press-releases/"
+    notes: "Center for Ultra-wide-area Resilient Electric Energy Transmission Networks."
+
+  - name: "Georgia Tech - Electric Machines Lab (GEM)"
+    url: "https://gem.ece.gatech.edu/"
+    method: web_scrape
+    notes: "Electric machines and power electronics research."
+
+  - name: "Georgia Tech - ACES Laboratory"
+    url: "https://aces.ece.gatech.edu/"
+    method: web_scrape
+    notes: "Grid-scale power electronics research."
+
+  - name: "ETH Zurich - Power Electronic Systems Laboratory (PES)"
+    url: "https://pes.ee.ethz.ch/"
+    method: web_scrape
+    research_url: "https://pes.ee.ethz.ch/research.html"
+    notes: "Johann W. Kolar's lab. World-leading in high-performance converter design."
+
+  - name: "ETH Zurich - High Power Electronic Systems (HPE)"
+    url: "https://hpe.ee.ethz.ch/"
+    method: web_scrape
+    notes: "High-power converter systems research."
+
+  - name: "Stanford - SUPER Lab (Stanford University Power Electronics Research)"
+    url: "https://superlab.stanford.edu/"
+    method: web_scrape
+    notes: "Juan Rivas-Davila. High-frequency power electronics."
+
+  - name: "Stanford - Wide-Bandgap Lab"
+    url: "https://wbglab.stanford.edu/"
+    method: web_scrape
+    notes: "WBG semiconductor device research."
+
+  - name: "UIUC - Power and Energy Systems Group"
+    url: "https://energy.ece.illinois.edu/"
+    method: web_scrape
+    notes: "Power electronics and energy systems at Illinois."
+
+# -----------------------------------------------------------------------------
+# 2. GOVERNMENT PROGRAMS & NATIONAL LABS
+# -----------------------------------------------------------------------------
+government:
+
+  - name: "DOE EERE - Office of Energy Efficiency and Renewable Energy"
+    url: "https://www.energy.gov/cmei/office-energy-efficiency-and-renewable-energy"
+    method: web_scrape
+    notes: "Umbrella office for DOE power electronics programs."
+
+  - name: "DOE AMMTO - Wide Bandgap Power Electronics"
+    url: "https://www.energy.gov/cmei/ammto/articles/doe-seeks-input-strengthening-americas-power-electronics-sector"
+    method: web_scrape
+    notes: "Advanced Materials and Manufacturing Technologies Office. WBG strategic framework."
+
+  - name: "DOE EERE - Advanced Power Electronics for Solar"
+    url: "https://www.energy.gov/eere/solar/funding-opportunity-announcement-advanced-power-electronics-designs-solar-applications"
+    method: web_scrape
+    notes: "Solar power electronics FOA page."
+
+  - name: "DOE Vehicle Technologies - Power Electronics"
+    url: "https://www.energy.gov/eere/vehicles/articles/us-drive-electrical-and-electronics-technical-team-roadmap"
+    method: web_scrape
+    notes: "EV power electronics roadmap and programs."
+
+  - name: "ARPA-E CIRCUITS Program"
+    url: "https://arpa-e.energy.gov/programs-and-initiatives/view-all-programs/circuits"
+    method: web_scrape
+    notes: "Creating Innovative and Reliable Circuits Using Inventive Topologies and Semiconductors."
+
+  - name: "ARPA-E Programs (all)"
+    url: "https://arpa-e.energy.gov/programs-and-initiatives/view-all-programs"
+    method: web_scrape
+    notes: "Monitor for new power electronics programs beyond CIRCUITS."
+
+  - name: "PowerAmerica Institute"
+    url: "https://poweramericainstitute.org/"
+    method: web_scrape
+    news_url: "https://poweramericainstitute.org/news/"
+    notes: "DOE Manufacturing USA institute for WBG semiconductors. Led by NC State."
+
+  - name: "NREL - Power Electronics and Electric Machines"
+    url: "https://www.nrel.gov/transportation/peem-thermal-management.html"
+    method: web_scrape
+    publications_url: "https://www2.nrel.gov/transportation/peem-publications"
+    notes: "NREL PEEM group. Thermal management, SiC/GaN device integration."
+
+  - name: "Oak Ridge National Lab - Vehicle Power Electronics"
+    url: "https://impact.ornl.gov/en/organisations/vehicle-power-electronics-research/"
+    method: web_scrape
+    notes: "ORNL power electronics and electric machinery program."
+
+  - name: "DOE OSTI - Power Electronics Publications"
+    url: "https://www.osti.gov/search/semantic:power%20electronics"
+    method: web_scrape
+    notes: "DOE Office of Scientific and Technical Information. Searchable database."
+
+# -----------------------------------------------------------------------------
+# 3. IEEE RESOURCES
+# -----------------------------------------------------------------------------
+ieee:
+
+  - name: "IEEE PELS - Power Electronics Society"
+    url: "https://www.ieee-pels.org/publications/"
+    method: web_scrape
+    notes: "Main PELS publications page. Check for news, calls for papers."
+
+  - name: "IEEE Transactions on Power Electronics (TPEL)"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=63"
+    method: rss
+    rss_url: "https://ieeexplore.ieee.org/rss/TOC63.XML"
+    notes: "punumber=63. Premier journal for power electronics. RSS via IEEE Xplore."
+
+  - name: "IEEE JESTPE - Journal of Emerging and Selected Topics in Power Electronics"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6245517"
+    method: rss
+    rss_url: "https://ieeexplore.ieee.org/rss/TOC6245517.XML"
+    notes: "punumber=6245517. Emerging topics in power electronics."
+
+  - name: "IEEE Transactions on Industrial Electronics"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=41"
+    method: rss
+    rss_url: "https://ieeexplore.ieee.org/rss/TOC41.XML"
+    notes: "punumber=41. Covers power converters, motor drives, industrial applications."
+
+  - name: "IEEE Transactions on Power Delivery"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=61"
+    method: rss
+    rss_url: "https://ieeexplore.ieee.org/rss/TOC61.XML"
+    notes: "punumber=61. Grid-tied power electronics, HVDC, FACTS."
+
+  - name: "IEEE PELS Resource Center"
+    url: "https://resourcecenter.ieee-pels.org/"
+    method: web_scrape
+    notes: "Webinars, conference presentations, workshops."
+
+# -----------------------------------------------------------------------------
+# 4. ARXIV CATEGORIES
+# -----------------------------------------------------------------------------
+arxiv:
+
+  - name: "arXiv eess.SY - Systems and Control"
+    url: "https://arxiv.org/list/eess.SY/recent"
+    method: rss
+    rss_url: "https://rss.arxiv.org/rss/eess.SY"
+    atom_url: "https://rss.arxiv.org/atom/eess.SY"
+    notes: "Primary category for power electronics control, converter modeling, grid control."
+
+  - name: "arXiv eess.SP - Signal Processing"
+    url: "https://arxiv.org/list/eess.SP/recent"
+    method: rss
+    rss_url: "https://rss.arxiv.org/rss/eess.SP"
+    atom_url: "https://rss.arxiv.org/atom/eess.SP"
+    notes: "Signal processing for power systems, modulation, sensing."
+
+  - name: "arXiv cs.SY - Systems and Control (CS mirror)"
+    url: "https://arxiv.org/list/cs.SY/recent"
+    method: rss
+    rss_url: "https://rss.arxiv.org/rss/cs.SY"
+    atom_url: "https://rss.arxiv.org/atom/cs.SY"
+    notes: "Cross-listed with eess.SY. Control theory applied to converters."
+
+  - name: "arXiv physics.app-ph - Applied Physics"
+    url: "https://arxiv.org/list/physics.app-ph/recent"
+    method: rss
+    rss_url: "https://rss.arxiv.org/rss/physics.app-ph"
+    atom_url: "https://rss.arxiv.org/atom/physics.app-ph"
+    notes: "GaN/SiC device physics, semiconductor materials papers."
+
+  - name: "arXiv cond-mat.mtrl-sci - Materials Science"
+    url: "https://arxiv.org/list/cond-mat.mtrl-sci/recent"
+    method: rss
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    atom_url: "https://rss.arxiv.org/atom/cond-mat.mtrl-sci"
+    notes: "Wide bandgap material research, crystal growth, defects."
+
+# -----------------------------------------------------------------------------
+# 5. NEWS & TRADE PUBLICATIONS
+# -----------------------------------------------------------------------------
+news_trade:
+
+  - name: "Power Electronics News"
+    url: "https://www.powerelectronicsnews.com/"
+    method: rss
+    rss_url: "https://www.powerelectronicsnews.com/feed/"
+    notes: "Dedicated power electronics trade publication."
+
+  - name: "EE Times"
+    url: "https://www.eetimes.com/"
+    method: rss
+    rss_url: "https://www.eetimes.com/feed/"
+    notes: "General electronics news. Filter for power/semiconductor content."
+
+  - name: "EE Times - Power/Performance tag"
+    url: "https://www.eetimes.com/category/power-performance/"
+    method: web_scrape
+    notes: "Power-specific section of EE Times."
+
+  - name: "How2Power Today"
+    url: "https://www.how2power.com/newsletters/"
+    method: web_scrape
+    notes: "Monthly newsletter with deep technical articles. No RSS; scrape newsletter archive."
+
+  - name: "Bodo's Power Systems"
+    url: "https://www.bodospower.com/"
+    method: web_scrape
+    current_issue_url: "https://www.bodospower.com/current.aspx"
+    notes: "European power electronics magazine. No RSS found; scrape current issue page."
+
+  - name: "EEPower"
+    url: "https://eepower.com/"
+    method: rss
+    rss_url: "https://eepower.com/feed/"
+    notes: "Power electronics technical articles, news, industry analysis."
+
+  - name: "Semiconductor Today"
+    url: "https://www.semiconductor-today.com/"
+    method: rss
+    rss_url: "https://www.semiconductor-today.com/rss.shtml"
+    notes: "Compound semiconductor news. Strong GaN/SiC coverage. Check rss.shtml for XML links."
+
+  - name: "Power Electronics Europe (Power-Mag)"
+    url: "https://www.power-mag.com/"
+    method: web_scrape
+    notes: "European power electronics trade publication."
+
+  - name: "Electronic Design - Power"
+    url: "https://www.electronicdesign.com/technologies/power"
+    method: web_scrape
+    notes: "Power section of Electronic Design magazine."
+
+# -----------------------------------------------------------------------------
+# 6. INDUSTRY SOURCES
+# -----------------------------------------------------------------------------
+industry:
+
+  - name: "Wolfspeed - News & Events"
+    url: "https://www.wolfspeed.com/company/news-events/news/"
+    method: web_scrape
+    notes: "Leading SiC device manufacturer. Product launches, tech breakthroughs."
+
+  - name: "Infineon - Press Releases"
+    url: "https://www.infineon.com/about/press/press-releases"
+    method: web_scrape
+    notes: "Global #1 power semiconductor vendor. SiC, GaN, IGBT, MOSFET."
+
+  - name: "Infineon - Market News"
+    url: "https://www.infineon.com/about/investor/news"
+    method: web_scrape
+    notes: "Investor and market-facing news from Infineon."
+
+  - name: "Texas Instruments - Power Design Resources"
+    url: "https://tipowerfundamentals.com/"
+    method: web_scrape
+    notes: "Three decades of power supply design seminar content."
+
+  - name: "Texas Instruments - Technical Documentation"
+    url: "https://www.ti.com/design-resources/design-tools-simulation/application-notes.html"
+    method: web_scrape
+    notes: "Application notes and reference designs."
+
+  - name: "onsemi - Press Announcements"
+    url: "https://www.onsemi.com/company/news-media/press-announcements"
+    method: web_scrape
+    notes: "SiC MOSFETs, vertical GaN, power modules."
+
+  - name: "onsemi - Technical Documentation"
+    url: "https://www.onsemi.com/design/technical-documentation"
+    method: web_scrape
+    notes: "Application notes and design guides."
+
+  - name: "GaN Systems (now Infineon) - Newsroom"
+    url: "https://gansystems.com/newsroom/"
+    method: web_scrape
+    notes: "Acquired by Infineon 2023. Legacy newsroom may still update."
+
+  - name: "EPC - Efficient Power Conversion (eGaN)"
+    url: "https://epc-co.com/epc/about-epc/events-and-news/news"
+    method: web_scrape
+    notes: "eGaN FETs and ICs. Leading GaN-on-Si vendor."
+
+  - name: "STMicroelectronics - Power & Energy"
+    url: "https://www.st.com/content/st_com/en/about/media-center/press-releases.html"
+    method: web_scrape
+    notes: "Major SiC and IGBT supplier. Filter press releases for power."
+
+  - name: "Navitas Semiconductor - News"
+    url: "https://navitassemi.com/news/"
+    method: web_scrape
+    notes: "GaNFast and GeneSiC technologies."
+
+  - name: "Rohm Semiconductor - News"
+    url: "https://www.rohm.com/news"
+    method: web_scrape
+    notes: "Major SiC MOSFET and module supplier."
+
+# -----------------------------------------------------------------------------
+# 7. CONFERENCES
+# -----------------------------------------------------------------------------
+conferences:
+
+  - name: "APEC - Applied Power Electronics Conference"
+    url: "https://apec-conf.org/"
+    method: web_scrape
+    notes: "Largest North American power electronics conference. Annual, spring."
+
+  - name: "ECCE - IEEE Energy Conversion Congress and Exposition"
+    url: "https://www.ieee-ecce.org/2026/"
+    method: web_scrape
+    base_url_pattern: "https://www.ieee-ecce.org/{year}/"
+    notes: "Premier IEEE conference for energy conversion. Annual, fall."
+
+  - name: "ECCE - IEEE Xplore Proceedings Archive"
+    url: "https://ieeexplore.ieee.org/xpl/conhome/1002943/all-proceedings"
+    method: web_scrape
+    notes: "All ECCE proceedings on IEEE Xplore."
+
+  - name: "ISPSD - International Symposium on Power Semiconductor Devices and ICs"
+    url: "https://www.ispsd2026.com/"
+    method: web_scrape
+    base_url_pattern: "https://www.ispsd{year}.com/"
+    notes: "Premier conference for power semiconductor devices. Annual."
+
+  - name: "WiPDA - IEEE Workshop on Wide Bandgap Power Devices and Applications"
+    url: "https://wipda.org/"
+    method: web_scrape
+    psma_url: "https://www.psma.com/conferences/WiPDA"
+    notes: "Focused on GaN/SiC device applications. Annual, fall."
+
+  - name: "PCIM Europe - Power Electronics, Intelligent Motion"
+    url: "https://pcim.mesago.com/nuernberg/en.html"
+    method: web_scrape
+    conference_url: "https://pcim.mesago.com/nuernberg/en/conference.html"
+    notes: "Largest European power electronics event. Nuremberg, annual spring."
+
+  - name: "PSMA - Power Sources Manufacturers Association"
+    url: "https://www.psma.com/"
+    method: web_scrape
+    notes: "Industry association. Tracks conferences, publishes reports."
+
+# -----------------------------------------------------------------------------
+# 8. ADDITIONAL / META SOURCES
+# -----------------------------------------------------------------------------
+meta:
+
+  - name: "Google Scholar Alerts"
+    url: "https://scholar.google.com/scholar_alerts"
+    method: api
+    notes: >
+      Set up alerts for key queries:
+      - "GaN power converter"
+      - "SiC MOSFET"
+      - "wide bandgap power electronics"
+      - "silicon carbide inverter"
+      - "gallium nitride power"
+      Delivers email digests of new papers. No direct API; parse email or use scholar scraping.
+
+  - name: "Semantic Scholar API"
+    url: "https://api.semanticscholar.org/"
+    method: api
+    notes: >
+      Free API. Search for papers by keyword with relevance ranking.
+      Endpoint: GET /graph/v1/paper/search?query=wide+bandgap+power+electronics
+      Rate limit: 100 requests/5 min (unauthenticated).
+
+  - name: "OSTI.gov API"
+    url: "https://www.osti.gov/api/v1/records"
+    method: api
+    notes: >
+      DOE Office of Scientific and Technical Information.
+      Free API for searching DOE-funded research.
+      Example: /api/v1/records?search_field=power+electronics&sort=publication_date+desc

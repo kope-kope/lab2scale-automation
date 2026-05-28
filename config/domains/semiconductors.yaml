@@ -1,0 +1,456 @@
+# =============================================================================
+# Semiconductor Research Monitoring Agent — Source List
+# Generated: 2026-05-28
+# Topics: Advanced packaging, chiplets, photonics, compound semiconductors,
+#          MEMS, quantum devices, EUV lithography, advanced node processes,
+#          heterogeneous integration
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. ACADEMIC LABS & RESEARCH CENTERS
+# -----------------------------------------------------------------------------
+academic_labs:
+
+  - name: "MIT Microsystems Technology Laboratories (MTL)"
+    url: "https://www.mtl.mit.edu/news"
+    method: web_scrape
+    notes: >
+      News page with research highlights. Newsletter archive at
+      /news/newsletters. MIT News also covers MTL at
+      https://news.mit.edu/clp/microsystems-technology-laboratories
+
+  - name: "Stanford Nanofabrication Facility (SNF)"
+    url: "https://snf.stanford.edu/"
+    method: web_scrape
+    notes: >
+      Primary cleanroom facility. nano@stanford merger site at
+      https://nanolabs.stanford.edu/. Stanford EE semiconductor
+      coverage at https://ee.stanford.edu/stanford-nanofabrication-facility-snf-forefront-chip-manufacturing
+
+  - name: "Berkeley Sensor & Actuator Center (BSAC)"
+    url: "https://bsac.berkeley.edu/news-archive"
+    method: web_scrape
+    alt_urls:
+      - "https://bsac.berkeley.edu/research"
+    notes: >
+      NSF Industry/University Cooperative Research Center. Covers MEMS,
+      sensors, nanoscale fabrication. Publications page also relevant.
+
+  - name: "Georgia Tech — Institute for Electronics and Nanotechnology (IEN)"
+    url: "https://ien.gatech.edu/"
+    method: web_scrape
+    alt_urls:
+      - "https://research.gatech.edu/institute-electronics-and-nanotechnology-builds-future-microelectronics-workforce"
+      - "https://senic.gatech.edu/"
+    notes: >
+      Also hosts SENIC (Southeastern Nanotechnology Infrastructure Corridor).
+      Marcus Nanotechnology Research Center on campus.
+
+  - name: "University of Michigan — Lurie Nanofabrication Facility"
+    url: "https://lnf.engin.umich.edu/category/news/"
+    method: web_scrape
+    alt_urls:
+      - "https://news.engin.umich.edu/tag/lurie-nanofabrication-facility/"
+    notes: >
+      Covers semiconductor devices, biotech, solid-state lighting, energy.
+      Michigan Engineering News tag also tracks facility outputs.
+
+  - name: "Purdue — Birck Nanotechnology Center"
+    url: "https://birck.research.purdue.edu/"
+    method: web_scrape
+    alt_urls:
+      - "https://birck.research.purdue.edu/research/"
+      - "https://engineering.purdue.edu/semiconductors/facilities"
+    notes: >
+      186,000 sq ft facility; 25,000 sq ft Scifres Nanofabrication cleanroom.
+      Semiconductors@Purdue portal also relevant.
+
+  - name: "UCSB — Compound Semiconductor Research"
+    url: "https://www.ece.ucsb.edu/research/ep"
+    method: web_scrape
+    alt_urls:
+      - "https://nrl.ece.ucsb.edu/research"
+      - "https://nanofab.ucsb.edu/"
+      - "https://materials.ucsb.edu/research/electronic-and-photonic-materials"
+    notes: >
+      World-leading in III-V compound semiconductors, GaN, photonics.
+      Electronics & Photonics group + Nanoelectronics Research Lab (NRL)
+      + UCSB Nanofab cleanroom.
+
+  - name: "imec (Belgium)"
+    url: "https://www.imec-int.com/en/reading-room"
+    method: web_scrape
+    alt_urls:
+      - "https://www.imec-int.com/en/expertise/cmos-and-beyond-cmos/stay-informed-about-imecs-semiconductor-research"
+    notes: >
+      World's leading semiconductor R&D hub. Reading room has articles
+      and press releases. No public RSS found; email subscription available.
+      IC-Link portal at https://www.imeciclink.com/en/news-and-events
+
+# -----------------------------------------------------------------------------
+# 2. GOVERNMENT & NATIONAL PROGRAMS
+# -----------------------------------------------------------------------------
+government_programs:
+
+  - name: "CHIPS for America (NIST)"
+    url: "https://www.nist.gov/chips"
+    method: web_scrape
+    alt_urls:
+      - "https://www.nist.gov/chips/chips-incentives-funding-opportunities"
+    notes: >
+      $39B CHIPS Program Office (manufacturing incentives) + $11B CHIPS
+      R&D Office. Funding opportunities, awards, and program updates.
+
+  - name: "DARPA Electronics Resurgence Initiative (ERI)"
+    url: "https://www.darpa.mil/work-with-us/electronics-resurgence-initiative"
+    method: web_scrape
+    alt_urls:
+      - "https://eri-summit.darpa.mil/what-is-eri"
+      - "https://www.darpa.mil/research/programs/jump"
+    notes: >
+      Thematic portfolio in Microsystems Technology Office (MTO).
+      Programs: PIPES (photonics), 3DSoC, FRANC, CHIPS, JUMP 2.0.
+
+  - name: "JUMP 2.0 (Joint University Microelectronics Program)"
+    url: "https://www.src.org/program/jump2/"
+    method: web_scrape
+    alt_urls:
+      - "https://www.darpa.mil/news/2023/jump-20-consortium"
+    notes: >
+      SRC-led public-private partnership with DARPA. Seven thematically
+      structured research centers across U.S. universities.
+
+  - name: "Microelectronics Commons (DOD)"
+    url: "https://microelectronicscommons.org/"
+    method: web_scrape
+    alt_urls:
+      - "https://www.defense.gov/News/Releases/Release/Article/3671111/dod-advances-microelectronics-commons-to-build-domestic-semiconductor-industry/"
+      - "https://nstxl.org/meet-the-8-hubs-of-the-microelectronics-commons/"
+    notes: >
+      National network of 8 regional innovation hubs funded by CHIPS Act.
+      Focus on lab-to-fab prototyping. ~$240M initial funding.
+
+  - name: "NSF Semiconductor Research (CHIPS FY spend)"
+    url: "https://www.nsf.gov/chips"
+    method: web_scrape
+    notes: >
+      NSF CHIPS-funded semiconductor workforce and research programs.
+
+# -----------------------------------------------------------------------------
+# 3. ACADEMIC PUBLICATIONS & JOURNALS
+# -----------------------------------------------------------------------------
+publications:
+
+  - name: "IEEE IEDM (International Electron Devices Meeting)"
+    url: "https://www.ieee-iedm.org/"
+    method: web_scrape
+    alt_urls:
+      - "https://ieeexplore.ieee.org/xpl/conhome.jsp?punumber=1000245"
+    notes: >
+      Premier conference for semiconductor device research. Proceedings
+      on IEEE Xplore. Annual conference (typically December).
+
+  - name: "IEEE Transactions on Electron Devices"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=16"
+    method: rss
+    rss_url: "https://ieeexplore.ieee.org/rss/TOC16.XML"
+    alt_urls:
+      - "https://eds.ieee.org/publications/transactions-on-electron-devices/lastest-issue-table-of-contents-toc"
+    notes: >
+      T-ED RSS feed available via IEEE Xplore TOC feed (punumber=16).
+      Also check EDS site for subscription link.
+
+  - name: "IEEE Global Semiconductors News"
+    url: "https://semiconductors.ieee.org/whats-new/rss-feed/"
+    method: rss
+    rss_url: "https://semiconductors.ieee.org/feed/"
+    notes: >
+      IEEE's dedicated semiconductor news portal with RSS.
+
+  - name: "Nature Electronics"
+    url: "https://www.nature.com/natelectron/"
+    method: rss
+    rss_url: "https://www.nature.com/natelectron.rss"
+    notes: >
+      High-impact journal. Nature RSS pattern: /[journal-code].rss
+      Web feeds page at https://www.nature.com/natelectron/web-feeds
+
+  - name: "Nature Nanotechnology"
+    url: "https://www.nature.com/nnano/"
+    method: rss
+    rss_url: "https://www.nature.com/nnano.rss"
+    notes: >
+      Covers nanoscale semiconductor devices, quantum dots, 2D materials.
+      Web feeds at https://www.nature.com/nnano/web-feeds
+
+# -----------------------------------------------------------------------------
+# 4. arXiv CATEGORIES (all have RSS feeds)
+# -----------------------------------------------------------------------------
+arxiv:
+  # RSS format: https://rss.arxiv.org/rss/{category}
+  # API docs: https://info.arxiv.org/help/rss.html
+
+  - name: "Mesoscale and Nanoscale Physics"
+    category: "cond-mat.mes-hall"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mes-hall"
+    method: rss
+    relevance: >
+      Semiconductor nanostructures, quantum wells/dots/wires, 2D
+      electron gas, mesoscopic transport, topological devices.
+
+  - name: "Materials Science"
+    category: "cond-mat.mtrl-sci"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    method: rss
+    relevance: >
+      Compound semiconductors (GaN, SiC, III-V), thin films,
+      crystal growth, defect engineering, heterostructures.
+
+  - name: "Applied Physics"
+    category: "physics.app-ph"
+    rss_url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    relevance: >
+      Device fabrication, packaging, MEMS, sensors, applied
+      semiconductor device physics.
+
+  - name: "Optics"
+    category: "physics.optics"
+    rss_url: "https://rss.arxiv.org/rss/physics.optics"
+    method: rss
+    relevance: >
+      Silicon photonics, integrated photonics, EUV lithography optics,
+      photonic devices, optical interconnects.
+
+  - name: "Quantum Physics"
+    category: "quant-ph"
+    rss_url: "https://rss.arxiv.org/rss/quant-ph"
+    method: rss
+    relevance: >
+      Quantum computing hardware (superconducting qubits, spin qubits
+      in semiconductors, photonic qubits), quantum devices.
+
+  - name: "Signal Processing (EESS)"
+    category: "eess.SP"
+    rss_url: "https://rss.arxiv.org/rss/eess.SP"
+    method: rss
+    relevance: >
+      RF/mmWave semiconductor circuits, signal integrity in advanced
+      packaging, chiplet interconnect signaling.
+
+  - name: "Instrumentation and Detectors"
+    category: "physics.ins-det"
+    rss_url: "https://rss.arxiv.org/rss/physics.ins-det"
+    method: rss
+    relevance: >
+      Semiconductor detectors, MEMS sensors, radiation-hardened devices.
+
+  - name: "Emerging Technologies (CS)"
+    category: "cs.ET"
+    rss_url: "https://rss.arxiv.org/rss/cs.ET"
+    method: rss
+    relevance: >
+      Beyond-CMOS computing, neuromorphic chips, in-memory computing,
+      novel semiconductor architectures.
+
+# -----------------------------------------------------------------------------
+# 5. NEWS & TRADE SOURCES
+# -----------------------------------------------------------------------------
+news_trade:
+
+  - name: "Semiconductor Engineering"
+    url: "https://semiengineering.com/"
+    method: rss
+    rss_url: "https://semiengineering.com/feed/"
+    notes: >
+      Deep technical coverage of design, test, verification, packaging,
+      manufacturing. Excellent for advanced packaging and chiplet content.
+
+  - name: "SemiAnalysis"
+    url: "https://semianalysis.com/"
+    method: rss
+    rss_url: "https://semianalysis.substack.com/feed"
+    notes: >
+      Dylan Patel's semiconductor analysis. Substack-based. Paywalled
+      deep dives; free summaries in RSS. Hundreds of thousands of subscribers.
+
+  - name: "EE Times"
+    url: "https://www.eetimes.com/"
+    method: rss
+    rss_url: "https://www.eetimes.com/feed/"
+    alt_urls:
+      - "https://www.eetimes.com/tag/semiconductors/"
+    notes: >
+      Broad electronics/semiconductor coverage. Semiconductor-specific
+      tag page also scrapable.
+
+  - name: "SemiWiki"
+    url: "https://semiwiki.com/"
+    method: rss
+    rss_url: "https://semiwiki.com/feed/"
+    notes: >
+      Open forum for semiconductor professionals. Industry insider
+      perspectives on EDA, IP, fabrication, design.
+
+  - name: "Tom's Hardware — Semiconductors"
+    url: "https://www.tomshardware.com/tech-industry/manufacturing/semiconductors"
+    method: rss
+    rss_url: "https://www.tomshardware.com/feeds/all"
+    notes: >
+      Technical hardware coverage. Full-site RSS; filter for semiconductor
+      and manufacturing topics. Good for process node and fab news.
+
+  - name: "AnandTech"
+    url: "https://www.anandtech.com/"
+    method: rss
+    rss_url: "https://www.anandtech.com/rss/"
+    notes: >
+      Deep technical reviews of semiconductor architectures. Site may
+      be in archival/reduced-publishing mode — verify current status.
+
+  - name: "Semiconductor Today"
+    url: "https://www.semiconductor-today.com/"
+    method: rss
+    rss_url: "https://www.semiconductor-today.com/rss.shtml"
+    notes: >
+      RSS feed page lists multiple category feeds. Strong coverage of
+      compound semiconductors (III-V, SiC, GaN).
+
+  - name: "Semiconductor Digest"
+    url: "https://sst.semiconductor-digest.com/"
+    method: rss
+    rss_url: "https://sst.semiconductor-digest.com/feed/"
+    notes: >
+      RSS page at https://sst.semiconductor-digest.com/rss-page/.
+      Covers manufacturing equipment, materials, process technology.
+
+  - name: "EIN Semiconductor News"
+    url: "https://semiconductors.einnews.com/"
+    method: rss
+    rss_url: "https://semiconductors.einnews.com/all_rss"
+    notes: >
+      Aggregated semiconductor news wire. Multiple topic-specific RSS
+      feeds available from the all_rss page.
+
+# -----------------------------------------------------------------------------
+# 6. INDUSTRY ASSOCIATIONS
+# -----------------------------------------------------------------------------
+industry_associations:
+
+  - name: "SEMI"
+    url: "https://www.semi.org/en"
+    method: web_scrape
+    alt_urls:
+      - "https://www.semi.org/en/resources"
+    notes: >
+      Global industry association for semiconductor equipment and
+      materials. Events (SEMICON), standards, market data. No public
+      RSS found — scrape news section or use API if available.
+
+  - name: "SIA (Semiconductor Industry Association)"
+    url: "https://www.semiconductors.org/news-events/latest-news/"
+    method: web_scrape
+    alt_urls:
+      - "https://www.semiconductors.org/sia-news-roundup/"
+    notes: >
+      Voice of the U.S. semiconductor industry. Weekly News Roundup
+      (Fridays). Publishes annual State of the Industry report and
+      monthly global sales data.
+
+  - name: "TSMC — Press Center"
+    url: "https://pr.tsmc.com/english/latest-news"
+    method: web_scrape
+    alt_urls:
+      - "https://pr.tsmc.com/english/news-archives"
+    notes: >
+      Official TSMC press releases. Key for advanced node (N2, A16),
+      3DFabric packaging, and CoWoS announcements. No RSS found.
+
+  - name: "Intel Newsroom"
+    url: "https://newsroom.intel.com/news"
+    method: web_scrape
+    alt_urls:
+      - "https://www.intc.com/news-events/press-releases"
+    notes: >
+      Intel 18A process, Foveros packaging, EMIB, and foundry services
+      announcements. Investor relations page for financial releases.
+
+  - name: "GlobalFoundries Newsroom"
+    url: "https://gf.com/newsroom/globalfoundries-press-releases/"
+    method: web_scrape
+    alt_urls:
+      - "https://gf.com/newsroom/"
+      - "https://investors.gf.com/news-releases/press-releases"
+    notes: >
+      Specialty/mature node leader. FD-SOI, RF, photonics, automotive
+      semiconductor announcements.
+
+  - name: "Samsung Semiconductor Newsroom"
+    url: "https://semiconductor.samsung.com/newsroom/"
+    method: web_scrape
+    notes: >
+      GAA (Gate-All-Around) process, advanced DRAM/NAND, HBM, and
+      foundry technology announcements.
+
+# -----------------------------------------------------------------------------
+# 7. STARTUP & VC TRACKERS
+# -----------------------------------------------------------------------------
+startup_trackers:
+
+  - name: "Crunchbase — Semiconductor Startups Hub"
+    url: "https://www.crunchbase.com/hub/semiconductor-startups"
+    method: api
+    api_notes: >
+      Crunchbase API (paid) for structured data. Hub page for browsing.
+      U.S. semiconductor startup equity funding hit $6.2B in 2025 (+85% YoY).
+
+  - name: "NFX Signal — Top Semiconductor Seed Investors"
+    url: "https://signal.nfx.com/investor-lists/top-semiconductors-seed-investors"
+    method: web_scrape
+    notes: >
+      List of 371+ semiconductor seed investors. Useful for tracking
+      which VCs are active in the space.
+
+  - name: "OpenVC — Semiconductor Investors"
+    url: "https://www.openvc.app/investor-lists/semiconductor-investors"
+    method: web_scrape
+    notes: >
+      Curated list of semiconductor-focused VCs with deal data.
+
+  - name: "Incubator List — Semiconductor Accelerators & VCs"
+    url: "https://incubatorlist.com/top-semiconductors-startup-accelerators-incubators-and-vcs"
+    method: web_scrape
+    notes: >
+      Directory of accelerators and VCs focused on semiconductors.
+
+  - name: "VCBacked — Semiconductor Startup Database"
+    url: "https://www.vcbacked.co/directory/industries/semiconductor"
+    method: web_scrape
+    notes: >
+      185+ funded semiconductor startups with funding details.
+
+  - name: "Fundraise Insider — Semiconductor Startups"
+    url: "https://fundraiseinsider.com/blog/semiconductor-startups/"
+    method: web_scrape
+    notes: >
+      Tracks recent semiconductor startup funding rounds.
+
+  # Key semiconductor-focused VCs to monitor:
+  semiconductor_vcs:
+    - name: "Intel Capital"
+      url: "https://www.intelcapital.com/"
+    - name: "TSMC Ventures"
+      url: "https://www.tsmc.com/"
+      notes: "Investment arm — no standalone site; track via TSMC press releases"
+    - name: "Eclipse Ventures"
+      url: "https://www.eclipse.vc/"
+      notes: "Deep-tech / hardware VC with semiconductor portfolio"
+    - name: "Walden Catalyst"
+      url: "https://www.waldencatalyst.com/"
+      notes: "Focused on semiconductor and deep-tech startups"
+    - name: "Cantos Ventures"
+      url: "https://www.cantosvc.com/"
+      notes: "Seed-stage semiconductor and hardware investing"
+    - name: "Sierra Ventures"
+      url: "https://www.sierraventures.com/"
+      notes: "Enterprise tech including semiconductor investments"

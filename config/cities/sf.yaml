@@ -1,0 +1,271 @@
+# =============================================================================
+# San Francisco / Bay Area Event Tracking - Source Configuration
+# =============================================================================
+# Focus: Power generation, energy storage, power electronics, semiconductors,
+#         advanced manufacturing, deep tech infrastructure
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. UNIVERSITY EVENT CALENDARS
+# -----------------------------------------------------------------------------
+university_events:
+
+  # --- Stanford ---
+  - name: "Stanford Precourt Institute for Energy Events"
+    url: "https://energy.stanford.edu/events"
+    method: web_scrape
+    notes: "Primary energy events at Stanford."
+
+  - name: "Stanford Energy Seminar Series"
+    url: "https://energy.stanford.edu/events/energy-seminar"
+    method: web_scrape
+    notes: "Weekly seminar. Often features breakthrough research."
+
+  - name: "Stanford EE Events"
+    url: "https://ee.stanford.edu/events"
+    method: web_scrape
+
+  - name: "Stanford MSE Events"
+    url: "https://mse.stanford.edu/events"
+    method: web_scrape
+
+  # --- UC Berkeley ---
+  - name: "Berkeley Energy & Resources Group Events"
+    url: "https://erg.berkeley.edu/events/"
+    method: web_scrape
+
+  - name: "BERC (Berkeley Energy and Resources Collaborative) Events"
+    url: "https://berc.berkeley.edu/events"
+    method: web_scrape
+    notes: "Student-run. Annual Energy Summit is flagship event."
+
+  - name: "Berkeley EECS Events"
+    url: "https://eecs.berkeley.edu/events"
+    method: web_scrape
+
+  - name: "Berkeley MSE Events"
+    url: "https://mse.berkeley.edu/events"
+    method: web_scrape
+
+  - name: "Haas Energy Institute Events"
+    url: "https://haas.berkeley.edu/energy-institute/events/"
+    method: web_scrape
+
+  # --- National Labs ---
+  - name: "LBNL Public Events"
+    url: "https://www.lbl.gov/events/"
+    method: web_scrape
+    notes: "Lawrence Berkeley National Lab. Materials, energy, computing."
+
+  - name: "SLAC Public Events"
+    url: "https://www6.slac.stanford.edu/news-and-events"
+    method: web_scrape
+
+  # --- Other ---
+  - name: "Santa Clara University Engineering Events"
+    url: "https://www.scu.edu/engineering/events/"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 2. INCUBATORS / ACCELERATORS
+# -----------------------------------------------------------------------------
+incubators:
+
+  - name: "Activate (Cyclotron Road) Events"
+    url: "https://activate.org/events"
+    method: web_scrape
+    notes: "Lab-embedded hard tech fellowship. Berkeley site."
+
+  - name: "Greentown Labs Events"
+    url: "https://greentownlabs.com/events/"
+    luma_url: "https://luma.com/greentownlabs"
+    method: web_scrape
+    notes: "Also posts events on Luma."
+
+  - name: "Plug and Play Events"
+    url: "https://www.plugandplaytechcenter.com/events/"
+    eventbrite_url: "https://www.eventbrite.com/o/plug-and-play-tech-center-7588498923"
+    method: web_scrape
+    notes: "Sunnyvale. Also on Eventbrite and Meetup."
+
+  - name: "HAX Events"
+    url: "https://hax.co/"
+    method: web_scrape
+    notes: "Pre-seed hard tech accelerator. Check for demo days."
+
+  - name: "IndieBio / SOSV Events"
+    url: "https://www.sosv.com/events"
+    method: web_scrape
+    notes: "Deep tech bio + hardware accelerator in SF."
+
+  - name: "Y Combinator Demo Day"
+    url: "https://www.ycombinator.com/demoday"
+    method: web_scrape
+    notes: "Quarterly. Track for hard tech / energy / hardware companies."
+
+# -----------------------------------------------------------------------------
+# 3. INDUSTRY / TRADE ORGANIZATIONS
+# -----------------------------------------------------------------------------
+industry_orgs:
+
+  - name: "SEMI Events Calendar"
+    url: "https://www.semi.org/en/connect/events/calendar"
+    rss_url: "https://www.semi.org/en/connect/events/rss.xml"
+    method: rss
+    notes: "SEMI HQ in Milpitas. RSS confirmed. Filter for Bay Area events."
+
+  - name: "California Energy Commission Events"
+    url: "https://www.energy.ca.gov/events"
+    method: web_scrape
+    notes: "CEC workshops, hearings, public meetings."
+
+  - name: "CEC Funding Workshops"
+    url: "https://www.energy.ca.gov/funding-opportunities"
+    method: web_scrape
+
+  - name: "CPUC Public Workshops"
+    url: "https://www.cpuc.ca.gov/events"
+    method: web_scrape
+    notes: "California Public Utilities Commission."
+
+  - name: "CESA (California Energy Storage Alliance) Events"
+    url: "https://storagealliance.org/events/"
+    method: web_scrape
+
+  - name: "Bay Area Energy Events"
+    url: "https://bayareaenergyevents.com/"
+    method: web_scrape
+    notes: "Aggregator for Bay Area energy industry events."
+
+  - name: "Bay Area Council Events"
+    url: "https://www.bayareacouncil.org/events/"
+    method: web_scrape
+    notes: "Business-civic organization. Energy/infrastructure events."
+
+# -----------------------------------------------------------------------------
+# 4. EVENT AGGREGATORS
+# -----------------------------------------------------------------------------
+aggregators:
+
+  - name: "Eventbrite SF - Science & Technology"
+    url: "https://www.eventbrite.com/d/ca--san-francisco/science-and-tech--events/"
+    method: api
+
+  - name: "Eventbrite SF - Energy"
+    url: "https://www.eventbrite.com/d/ca--san-francisco/energy/"
+    method: api
+
+  - name: "Eventbrite SF - Hardware"
+    url: "https://www.eventbrite.com/d/ca--san-francisco/hardware/"
+    method: api
+
+  - name: "Luma SF"
+    url: "https://luma.com/sf"
+    method: web_scrape
+
+  - name: "Luma - SF Climate Week"
+    url: "https://luma.com/sf-climate-week"
+    method: web_scrape
+
+  - name: "Luma - Deep Tech Week SF"
+    url: "https://luma.com/deep-tech-week-sf"
+    method: web_scrape
+
+  - name: "Meetup - Hardware Massive"
+    url: "https://www.meetup.com/hardware-massive/"
+    method: api
+    notes: "Large hardware/deep tech community. Regular events."
+
+  - name: "Meetup - SF Hardware Startups"
+    url: "https://www.meetup.com/sf-hardware-startup/"
+    method: api
+
+  - name: "Meetup - ClimateLink SF"
+    url: "https://www.meetup.com/climatelink/"
+    method: api
+
+  - name: "Built In SF Events"
+    url: "https://www.builtinsf.com/events"
+    method: web_scrape
+
+  - name: "SF Tech Events (10times)"
+    url: "https://10times.com/san-francisco-us/technology"
+    method: web_scrape
+
+  - name: "Gary's Guide SF"
+    url: "https://garysguide.com/sf"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 5. MAJOR RECURRING CONFERENCES
+# -----------------------------------------------------------------------------
+conferences:
+
+  - name: "SEMICON West"
+    url: "https://www.semi.org/en/connect/events/semicon-west"
+    method: web_scrape
+    notes: "October. Moscone Center, SF. Largest semiconductor event in the West."
+
+  - name: "TechCrunch Disrupt"
+    url: "https://techcrunch.com/events/disrupt/"
+    method: web_scrape
+    notes: "October. Moscone Center. Deep tech and startup track."
+
+  - name: "Hard Tech Week SF"
+    url: "https://www.hardtechweek.com/"
+    method: web_scrape
+    notes: "May/June. Deep tech community events across SF."
+
+  - name: "Deep Tech Week SF"
+    url: "https://www.deep-tech-week.com/sf-2026"
+    method: web_scrape
+    notes: "June. Quantum, semiconductors, clean energy, advanced manufacturing."
+
+  - name: "SF Climate Week"
+    url: "https://www.sfclimateweek.org/"
+    method: web_scrape
+    notes: "April. Clean energy and climate tech events."
+
+  - name: "SF Tech Week"
+    url: "https://sftechweek.com/"
+    method: web_scrape
+    notes: "October. Distributed tech event series."
+
+  - name: "BERC Energy Summit"
+    url: "https://berc.berkeley.edu/energy-summit"
+    method: web_scrape
+    notes: "Annual. Largest student-run energy conference on West Coast."
+
+  - name: "Intersolar North America (San Diego — regional)"
+    url: "https://www.intersolar.us/"
+    method: web_scrape
+    notes: "February. San Diego. Worth tracking for Bay Area attendees."
+
+  - name: "RE+ (formerly Solar Power International)"
+    url: "https://www.re-plus.com/"
+    method: web_scrape
+    notes: "Largest clean energy event in North America. Location rotates."
+
+# -----------------------------------------------------------------------------
+# 6. VC / STARTUP EVENT SERIES
+# -----------------------------------------------------------------------------
+vc_events:
+
+  - name: "a16z American Dynamism Summit"
+    url: "https://a16z.com/american-dynamism/"
+    method: web_scrape
+    notes: "Annual. Deep tech / defense / infrastructure investing."
+
+  - name: "a16z Events"
+    url: "https://a16z.com/events/"
+    method: web_scrape
+
+  - name: "Lux Capital Events (Riskgaming)"
+    url: "https://www.luxcapital.com/riskgaming"
+    method: web_scrape
+    notes: "Deep tech VC. Riskgaming events in SF."
+
+  - name: "DCVC Events"
+    url: "https://www.dcvc.com/news/"
+    method: web_scrape
+    notes: "Deep tech VC. Track announcements for demo days."

@@ -1,0 +1,231 @@
+# =============================================================================
+# New York City Event Tracking - Source Configuration
+# =============================================================================
+# Focus: Power generation, energy storage, power electronics, semiconductors,
+#         advanced manufacturing, deep tech infrastructure
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. UNIVERSITY EVENT CALENDARS
+# -----------------------------------------------------------------------------
+university_events:
+
+  - name: "Columbia CGEP (Center on Global Energy Policy) Events"
+    url: "https://www.energypolicy.columbia.edu/events/"
+    method: web_scrape
+    notes: "Primary energy-focused events at SIPA."
+
+  - name: "Columbia SIPA Events"
+    url: "https://www.sipa.columbia.edu/upcoming-events"
+    method: web_scrape
+
+  - name: "Columbia Engineering Events"
+    url: "https://www.engineering.columbia.edu/about/events"
+    method: web_scrape
+
+  - name: "Columbia Data Science Institute Events"
+    url: "https://datascience.columbia.edu/outreach/events/"
+    method: web_scrape
+
+  - name: "NYU Tandon Engineering Events"
+    url: "https://engineering.nyu.edu/events"
+    method: web_scrape
+    notes: "Filter by category for energy/hardware."
+
+  - name: "NYU CUSP Events (via Eventbrite)"
+    url: "https://www.eventbrite.com/o/nyu-center-for-urban-science-progress-61585017433"
+    method: api
+    notes: "Eventbrite API with organizer ID 61585017433."
+
+  - name: "CUNY Energy Institute (CCNY)"
+    url: "https://www.ccny.cuny.edu/energy"
+    method: web_scrape
+    notes: "Battery and energy storage research hub. Check for seminars."
+
+  - name: "CCNY Grove School of Engineering Events"
+    url: "https://www.ccny.cuny.edu/engineering/events-calendar"
+    method: web_scrape
+
+  - name: "Cornell Tech Events"
+    url: "https://tech.cornell.edu/events/"
+    method: web_scrape
+    notes: "Roosevelt Island campus."
+
+# -----------------------------------------------------------------------------
+# 2. INCUBATORS / ACCELERATORS
+# -----------------------------------------------------------------------------
+incubators:
+
+  - name: "Newlab Events (via Luma)"
+    url: "https://luma.com/newlab"
+    method: web_scrape
+    notes: "Brooklyn Navy Yard. Deep tech / climate tech focus."
+
+  - name: "Newlab - New Climate Futures Conference"
+    url: "https://www.newlab.com/new-climate-futures"
+    method: web_scrape
+    notes: "Annual flagship climate/energy conference."
+
+  - name: "Urban Future Lab / ACRE Events"
+    url: "https://futurelabs.nyc/events/"
+    method: web_scrape
+    notes: "NYC's longest-running cleantech incubator."
+
+  - name: "PowerBridgeNY Calendar"
+    url: "http://powerbridgeny.com/calendar/"
+    method: web_scrape
+    notes: "Energy tech-to-market accelerator (Columbia + NYU + CUNY)."
+
+  - name: "Greentown Labs Events (NYC during Climate Week)"
+    url: "https://greentownlabs.com/events/"
+    method: web_scrape
+    notes: "Not NYC-based but hosts events during Climate Week."
+
+  - name: "Cleantech Open Northeast Events"
+    url: "https://northeast.cleantechopen.org/events/custom/events3/directory"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 3. INDUSTRY / TRADE ORGANIZATIONS
+# -----------------------------------------------------------------------------
+industry_orgs:
+
+  - name: "NYSERDA Events"
+    url: "https://www.nyserda.ny.gov/Events.aspx"
+    method: web_scrape
+    notes: "NY State energy authority. Workshops, webinars, conferences."
+
+  - name: "NY-BEST Events"
+    url: "https://ny-best.org/events/event_list.asp"
+    method: web_scrape
+    notes: "Battery and energy storage consortium. Annual 'Capture the Energy' conference."
+
+  - name: "ACE NY Events"
+    url: "https://www.aceny.org/events"
+    method: web_scrape
+    notes: "Alliance for Clean Energy New York. Annual fall conference."
+
+  - name: "NYSEIA Events"
+    url: "https://www.nyseia.org/upcoming"
+    method: web_scrape
+    notes: "NY Solar Energy Industries Assoc. Annual NYC Solar + Storage Summit."
+
+  - name: "IEEE NY Section"
+    url: "https://ewh.ieee.org/r1/new_york/"
+    method: web_scrape
+
+  - name: "IEEE Joint PES/IAS NY Chapter"
+    url: "https://ewh.ieee.org/soc/pes/newyork/"
+    method: web_scrape
+    notes: "Power & Energy Society / Industry Applications Society."
+
+  - name: "NY Tech Alliance Events"
+    url: "https://www.nytech.org/events"
+    method: web_scrape
+    notes: "Hosts NY Tech Meetup including Climate Tech editions."
+
+  - name: "The Climate Group Events"
+    url: "https://www.theclimategroup.org/events"
+    method: web_scrape
+    notes: "Organizer of Climate Week NYC."
+
+  - name: "YPE NYC (Young Professionals in Energy)"
+    url: "https://www.ypenyc.org/upcoming-events"
+    method: web_scrape
+
+  - name: "DER Task Force"
+    url: "https://www.dertaskforce.com/"
+    rss_url: "https://www.dertaskforce.com/feed"
+    method: rss
+    notes: "Substack. Distributed energy community in NYC."
+
+# -----------------------------------------------------------------------------
+# 4. EVENT AGGREGATORS
+# -----------------------------------------------------------------------------
+aggregators:
+
+  - name: "Eventbrite NYC - Energy"
+    url: "https://www.eventbrite.com/d/ny--new-york/energy/"
+    method: api
+
+  - name: "Eventbrite NYC - Science & Tech"
+    url: "https://www.eventbrite.com/d/ny--new-york/science-and-tech--events/"
+    method: api
+
+  - name: "Eventbrite NYC - Renewable Energy Conferences"
+    url: "https://www.eventbrite.com/d/ny--new-york/renewable-energy-conference/"
+    method: api
+
+  - name: "Luma NYC"
+    url: "https://luma.com/nyc"
+    method: web_scrape
+
+  - name: "Luma - Tech NYC"
+    url: "https://luma.com/tech-nyc"
+    method: web_scrape
+
+  - name: "Luma - NY Hardware Meetup"
+    url: "https://luma.com/ny-hardware-meetup"
+    method: web_scrape
+    notes: "8,400+ member hardware community. Monthly. Highly relevant."
+
+  - name: "Meetup - NY Hardware"
+    url: "https://www.meetup.com/ny-hardware/"
+    method: api
+
+  - name: "Meetup - NYC Green Tech"
+    url: "https://www.meetup.com/nyc-green-tech/"
+    method: api
+
+  - name: "Built In NYC Events"
+    url: "https://www.builtinnyc.com/events"
+    method: web_scrape
+
+  - name: "Gary's Guide NYC"
+    url: "https://garysguide.com/"
+    method: web_scrape
+    notes: "#1 NYC tech events aggregator. Check for RSS at /rss."
+
+  - name: "NY Climate Tech (Substack)"
+    url: "https://nyc.climatetechcities.com/"
+    rss_url: "https://nyc.climatetechcities.com/feed"
+    method: rss
+    notes: "Weekly roundup of NYC climate tech events."
+
+# -----------------------------------------------------------------------------
+# 5. RECURRING CONFERENCES
+# -----------------------------------------------------------------------------
+conferences:
+
+  - name: "Climate Week NYC"
+    url: "https://www.climateweeknyc.org/"
+    method: web_scrape
+    notes: "September. World's largest climate event. 1,000+ events."
+
+  - name: "Deep Tech Week NYC"
+    url: "https://www.deep-tech-week.com/nyc-2026"
+    events_url: "https://www.deep-tech-week.com/nyc-2026/events"
+    method: web_scrape
+    notes: "Quantum, semiconductors, clean energy, advanced manufacturing."
+
+  - name: "NY-BEST Capture the Energy Conference"
+    url: "https://ny-best.org/mpage/cte26callforspeakers"
+    method: web_scrape
+    notes: "Annual energy storage conference and expo."
+
+  - name: "Columbia Global Energy Summit"
+    url: "https://www.energypolicy.columbia.edu/events/2026-columbia-global-energy-summit/"
+    method: web_scrape
+
+  - name: "ASMC (Advanced Semiconductor Manufacturing Conference)"
+    url: "https://www.semi.org/en/connect/events/advanced-semiconductor-manufacturing-conference-asmc"
+    method: web_scrape
+    notes: "Albany, NY. Premier semiconductor manufacturing event."
+
+  - name: "New York Tech Week (via Luma)"
+    url: "https://luma.com/nytw"
+    method: web_scrape
+
+  - name: "Javits Center Calendar"
+    url: "https://www.javitscenter.com/calendar"
+    method: web_scrape

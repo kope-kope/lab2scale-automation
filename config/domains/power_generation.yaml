@@ -1,0 +1,560 @@
+# =============================================================================
+# Power Generation Research Monitoring - Source Configuration
+# =============================================================================
+# Categories: Academic Labs, Government/DOE, arXiv, Publications, News,
+#             Startup/Industry Trackers, Patent Databases
+# Methods: rss, api, scrape
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. ACADEMIC LABS
+# -----------------------------------------------------------------------------
+academic_labs:
+
+  # --- Fusion & Plasma ---
+  - name: "MIT Plasma Science and Fusion Center (PSFC)"
+    url: "https://www.psfc.mit.edu/"
+    research_page: "https://www.psfc.mit.edu/research-areas/"
+    news_url: "https://news.mit.edu/topic/plasma-and-fusion"
+    method: scrape
+    focus: [fusion, plasma physics]
+    notes: "SPARC/ARC tokamak program, CFS collaboration. Scrape research-areas and MIT News topic page."
+
+  - name: "Princeton Plasma Physics Laboratory (PPPL)"
+    url: "https://www.pppl.gov/"
+    research_page: "https://www.pppl.gov/research"
+    publications_page: "https://www.pppl.gov/pppl-publications"
+    method: scrape
+    focus: [fusion, plasma physics, stellarators]
+    notes: "DOE national lab. NSTX-U spherical tokamak. Scrape /research and /pppl-publications."
+
+  - name: "Princeton Program in Plasma Physics"
+    url: "https://plasma.princeton.edu/"
+    research_page: "https://plasma.princeton.edu/research"
+    method: scrape
+    focus: [fusion, plasma physics]
+
+  # --- Nuclear / Advanced Fission ---
+  - name: "MIT Nuclear Science and Engineering - Fusion & Plasmas"
+    url: "https://web.mit.edu/nse/research/fusion.html"
+    method: scrape
+    focus: [fusion, advanced fission]
+
+  - name: "UC Berkeley Nuclear Engineering"
+    url: "https://www.nuc.berkeley.edu/"
+    method: scrape
+    focus: [advanced fission, nuclear materials]
+
+  - name: "University of Michigan NERS (Nuclear Engineering)"
+    url: "https://ners.engin.umich.edu/research/labs-list/"
+    research_page: "https://www.engin.umich.edu/research/core-expertise/nuclear-energy-fission-and-fusion/"
+    method: scrape
+    focus: [advanced fission, fusion, nuclear materials]
+    notes: "#1 ranked nuclear engineering program. Multiple labs including NOME Lab."
+
+  - name: "Georgia Tech Strategic Energy Institute"
+    url: "https://energy.gatech.edu/research/energy-research"
+    labs_page: "https://research.gatech.edu/energy/labs-centers"
+    method: scrape
+    focus: [solar, energy storage, power electronics]
+
+  - name: "Georgia Tech ACES Lab (Advanced Computational Electricity Systems)"
+    url: "https://aces.ece.gatech.edu/"
+    method: scrape
+    focus: [power systems, grid, generation]
+
+  # --- Solar / Thermoelectrics / Next-Gen ---
+  - name: "Stanford Precourt Institute for Energy"
+    url: "https://energy.stanford.edu/"
+    solar_page: "https://energy.stanford.edu/research/research-areas/renewable-energy/solar"
+    efficiency_page: "https://energy.stanford.edu/research/research-areas/energy-efficiency"
+    method: scrape
+    focus: [solar, thermoelectrics, energy efficiency]
+    notes: "Covers PV, thermophotovoltaics, thermoelectric generators, radiative cooling."
+
+  - name: "Caltech Resnick Sustainability Institute"
+    url: "https://resnick.caltech.edu/"
+    future_energy: "https://researchimpact.caltech.edu/future-energy"
+    method: scrape
+    focus: [solar, space-based solar, artificial photosynthesis]
+    notes: "Karman Lab space-based solar, JCAP artificial photosynthesis."
+
+  - name: "UC Berkeley Renewable and Appropriate Energy Laboratory (RAEL)"
+    url: "https://rael.berkeley.edu/"
+    method: scrape
+    focus: [renewable energy, energy systems]
+
+  - name: "UC Berkeley Energy Research (EECS)"
+    url: "https://www2.eecs.berkeley.edu/Research/Areas/ENE/"
+    method: scrape
+    focus: [power electronics, energy conversion, solar]
+
+# -----------------------------------------------------------------------------
+# 2. GOVERNMENT / DOE PROGRAMS
+# -----------------------------------------------------------------------------
+government_doe:
+
+  # --- ARPA-E ---
+  - name: "ARPA-E Power Generation Programs"
+    url: "https://arpa-e.energy.gov/research/power-generation"
+    method: scrape
+    focus: [all power generation]
+    notes: "Main ARPA-E page filtering for power gen projects. High-risk/high-reward research."
+
+  - name: "ARPA-E eXCHANGE (Funding Opportunities)"
+    url: "https://arpa-e-foa.energy.gov/"
+    method: scrape
+    focus: [funding, new programs]
+
+  # --- DOE Offices ---
+  - name: "DOE Office of Fusion Energy Sciences (FES)"
+    url: "https://www.energy.gov/science/fes/fusion-energy-sciences"
+    method: scrape
+    focus: [fusion]
+
+  - name: "DOE Fusion Energy Hub"
+    url: "https://www.energy.gov/fusion-energy"
+    method: scrape
+    focus: [fusion policy, milestones]
+
+  - name: "DOE Office of Nuclear Energy"
+    url: "https://www.energy.gov/ne/office-nuclear-energy"
+    method: scrape
+    focus: [advanced fission, SMRs, nuclear fuel cycle]
+
+  - name: "DOE Office of Energy Efficiency & Renewable Energy (EERE)"
+    url: "https://www.energy.gov/eere/office-energy-efficiency-renewable-energy"
+    method: scrape
+    focus: [solar, geothermal, renewables]
+
+  - name: "DOE Solar Energy Technologies Office (SETO)"
+    url: "https://www.energy.gov/eere/solar/solar-energy-technologies-office"
+    method: scrape
+    focus: [solar PV, CSP, grid integration]
+
+  - name: "DOE Geothermal Technologies Office"
+    url: "https://www.energy.gov/eere/geothermal/geothermal-technologies-office"
+    method: scrape
+    focus: [geothermal, enhanced geothermal systems]
+
+  - name: "DOE Office of Science News"
+    url: "https://www.energy.gov/science/listings/office-science-news"
+    rss_url: "https://science.osti.gov/RSS"
+    method: rss
+    focus: [basic energy sciences, fusion, materials]
+
+  - name: "DOE Energy News (all)"
+    url: "https://www.energy.gov/listings/energy-news"
+    method: scrape
+    focus: [all energy topics]
+
+  # --- National Labs ---
+  - name: "NREL (National Renewable Energy Laboratory)"
+    url: "https://www.nrel.gov/"
+    news_url: "https://www.nrel.gov/news/"
+    subscribe_url: "https://www.nrel.gov/news/subscribe"
+    method: scrape
+    focus: [solar, geothermal, wind, grid integration]
+    notes: "Primary US lab for renewable energy R&D. May have transitioned to NLR (nlr.gov)."
+
+  - name: "Sandia National Lab - Energy Programs"
+    url: "https://energy.sandia.gov/programs/"
+    solar_url: "https://energy.sandia.gov/programs/renewable-energy/photovoltaic-solar-energy/"
+    geothermal_url: "https://energy.sandia.gov/programs/renewable-energy/geothermal-research/"
+    method: scrape
+    focus: [solar PV, geothermal, grid, energy storage]
+
+  - name: "Oak Ridge National Lab - Fusion Energy"
+    url: "https://www.ornl.gov/fusionenergy"
+    directorate_url: "https://www.ornl.gov/directorate/ffesd"
+    method: scrape
+    focus: [fusion, fission, materials]
+    notes: "Fusion and Fission Energy and Science Directorate."
+
+  - name: "LLNL National Ignition Facility"
+    url: "https://lasers.llnl.gov/"
+    fusion_url: "https://lasers.llnl.gov/science/achieving-fusion-ignition"
+    method: scrape
+    focus: [inertial confinement fusion, laser fusion]
+    notes: "First lab to achieve fusion ignition (Dec 2022)."
+
+  - name: "Idaho National Laboratory - Nuclear Energy"
+    url: "https://inl.gov/nuclear-energy/"
+    news_url: "https://inl.gov/news/"
+    method: scrape
+    focus: [advanced fission, SMRs, nuclear fuel, reactor testing]
+    notes: "Nation's leading center for nuclear energy R&D."
+
+  - name: "Lawrence Berkeley National Lab - Energy Technologies"
+    url: "https://eta.lbl.gov/"
+    alt_energy: "https://www.lbl.gov/research/alternative-energy/"
+    method: scrape
+    focus: [solar, energy efficiency, batteries]
+
+  # --- EIA (Data) ---
+  - name: "EIA (Energy Information Administration) RSS Feeds"
+    url: "https://www.eia.gov/tools/rssfeeds/"
+    method: rss
+    focus: [energy data, electricity generation statistics]
+    notes: "Multiple RSS feeds for electricity, generation, consumption data."
+
+# -----------------------------------------------------------------------------
+# 3. arXiv CATEGORIES
+# -----------------------------------------------------------------------------
+# RSS feed format: https://rss.arxiv.org/rss/{category}
+# Combine with +: https://rss.arxiv.org/rss/cat1+cat2
+# Docs: https://info.arxiv.org/help/rss.html
+arxiv:
+
+  - name: "Plasma Physics"
+    category: "physics.plasm-ph"
+    rss_url: "https://rss.arxiv.org/rss/physics.plasm-ph"
+    method: rss
+    focus: [fusion, plasma confinement, MHD]
+    notes: "Covers magnetically confined plasmas, ICF, laser-plasma interactions."
+
+  - name: "Applied Physics"
+    category: "physics.app-ph"
+    rss_url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    focus: [photovoltaics, thermoelectrics, energy devices]
+    notes: "Covers energy sciences, photonics, advanced materials for devices."
+
+  - name: "Materials Science (Condensed Matter)"
+    category: "cond-mat.mtrl-sci"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    method: rss
+    focus: [solar cell materials, thermoelectric materials, superconductors]
+
+  - name: "Nuclear Experiment"
+    category: "nucl-ex"
+    rss_url: "https://rss.arxiv.org/rss/nucl-ex"
+    method: rss
+    focus: [nuclear reactions, fission/fusion experiments]
+
+  - name: "Nuclear Theory"
+    category: "nucl-th"
+    rss_url: "https://rss.arxiv.org/rss/nucl-th"
+    method: rss
+    focus: [nuclear structure, fusion cross-sections]
+
+  - name: "Instrumentation and Detectors"
+    category: "physics.ins-det"
+    rss_url: "https://rss.arxiv.org/rss/physics.ins-det"
+    method: rss
+    focus: [diagnostic instruments for plasma/fusion/energy]
+
+  - name: "Combined Feed (Plasma + Applied + Materials)"
+    rss_url: "https://rss.arxiv.org/rss/physics.plasm-ph+physics.app-ph+cond-mat.mtrl-sci"
+    method: rss
+    focus: [all power generation research]
+    notes: "Composite feed. arXiv supports combining categories with +."
+
+  # --- arXiv API (alternative to RSS for programmatic access) ---
+  - name: "arXiv API"
+    url: "http://export.arxiv.org/api/query"
+    method: api
+    notes: >
+      REST API. Example query for fusion energy papers:
+      http://export.arxiv.org/api/query?search_query=all:fusion+energy+AND+cat:physics.plasm-ph&max_results=50
+      Docs: https://info.arxiv.org/help/api/index.html
+
+# -----------------------------------------------------------------------------
+# 4. PUBLICATIONS & JOURNALS
+# -----------------------------------------------------------------------------
+publications:
+
+  - name: "Nature Energy"
+    url: "https://www.nature.com/nenergy/"
+    rss_url: "https://www.nature.com/nenergy.rss"
+    method: rss
+    focus: [all energy research, solar, storage, policy]
+    notes: "Top-tier energy journal. RSS pattern for Nature journals: /nenergy.rss"
+
+  - name: "Joule (Cell Press)"
+    url: "https://www.cell.com/joule/home"
+    rss_url: "https://www.cell.com/joule/rss"
+    method: rss
+    focus: [energy science, solar, materials, devices]
+    notes: "High-impact energy journal. RSS confirmed at /joule/rss."
+
+  - name: "Advanced Energy Materials (Wiley)"
+    url: "https://advanced.onlinelibrary.wiley.com/journal/16146840"
+    rss_url: "https://onlinelibrary.wiley.com/rss/journal/10.1002/(ISSN)1614-6840"
+    method: rss
+    focus: [solar cells, thermoelectrics, batteries, fuel cells]
+
+  - name: "Science (AAAS) - News Current"
+    url: "https://www.science.org/"
+    rss_url: "https://www.science.org/rss/news_current.xml"
+    method: rss
+    focus: [general science, energy breakthroughs]
+    notes: "Broad coverage; filter for energy/physics topics."
+
+  - name: "IEEE Transactions on Power Systems"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=59"
+    method: scrape
+    focus: [power systems, generation, grid]
+    notes: "IEEE Xplore offers RSS per journal. Check journal page for feed link."
+
+  - name: "IEEE Transactions on Energy Conversion"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=60"
+    method: scrape
+    focus: [energy conversion, generators, transformers]
+
+  - name: "IEEE Transactions on Sustainable Energy"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=5165391"
+    method: scrape
+    focus: [renewable generation, sustainable power]
+
+  - name: "IEEE Transactions on Nuclear Science"
+    url: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=23"
+    method: scrape
+    focus: [nuclear instrumentation, reactor physics]
+
+  - name: "Nuclear Fusion (IOP Science)"
+    url: "https://iopscience.iop.org/journal/0029-5515"
+    method: scrape
+    focus: [fusion research, tokamaks, stellarators, ICF]
+    notes: "Leading journal specifically for fusion research."
+
+  - name: "Plasma Physics and Controlled Fusion (IOP)"
+    url: "https://iopscience.iop.org/journal/0741-3335"
+    method: scrape
+    focus: [plasma physics, controlled fusion]
+
+  - name: "Solar Energy (Elsevier)"
+    url: "https://www.sciencedirect.com/journal/solar-energy"
+    method: scrape
+    focus: [solar thermal, PV, solar applications]
+
+  - name: "Solar Energy Materials and Solar Cells (Elsevier)"
+    url: "https://www.sciencedirect.com/journal/solar-energy-materials-and-solar-cells"
+    method: scrape
+    focus: [PV materials, thin films, perovskites]
+
+  - name: "Geothermics (Elsevier)"
+    url: "https://www.sciencedirect.com/journal/geothermics"
+    method: scrape
+    focus: [geothermal energy, EGS]
+
+# -----------------------------------------------------------------------------
+# 5. NEWS SOURCES
+# -----------------------------------------------------------------------------
+news:
+
+  - name: "Canary Media"
+    url: "https://www.canarymedia.com/"
+    rss_url: "https://www.canarymedia.com/rss-feed"
+    method: rss
+    focus: [clean energy transition, solar, nuclear, fusion]
+    notes: "Nonprofit clean energy journalism."
+
+  - name: "Utility Dive - Generation"
+    url: "https://www.utilitydive.com/topic/Generation/"
+    rss_url: "https://www.utilitydive.com/feeds/news/"
+    method: rss
+    focus: [power generation, utility industry, grid]
+
+  - name: "IEEE Spectrum - Energy"
+    url: "https://spectrum.ieee.org/energy"
+    rss_url: "https://spectrum.ieee.org/feeds/feed.rss"
+    method: rss
+    focus: [energy tech, fusion, solar, nuclear]
+    notes: "General feed; filter for energy topic."
+
+  - name: "Ars Technica - Science"
+    url: "https://arstechnica.com/science/"
+    rss_url: "https://arstechnica.com/science/feed/"
+    method: rss
+    focus: [energy breakthroughs, fusion, physics]
+    notes: "Science section covers major energy breakthroughs."
+
+  - name: "Electrek - Energy Brief"
+    url: "https://electrek.co/guides/energy-brief/"
+    rss_url: "https://electrek.co/feed/"
+    method: rss
+    focus: [solar, clean energy, energy storage]
+    notes: "Daily technical/financial review of green energy news."
+
+  - name: "Recharge News"
+    url: "https://www.rechargenews.com/"
+    method: scrape
+    focus: [wind, solar, renewables industry]
+    notes: "Paywalled. May need scrape of headlines or use their API."
+
+  - name: "Energy Storage News"
+    url: "https://www.energy-storage.news/"
+    rss_url: "https://www.energy-storage.news/feed/"
+    method: rss
+    focus: [energy storage, batteries, grid storage]
+
+  - name: "Nuclear Newswire (ANS)"
+    url: "https://www.ans.org/news/"
+    method: scrape
+    focus: [nuclear fission, fusion, reactor news]
+    notes: "American Nuclear Society news wire."
+
+  - name: "World Nuclear News"
+    url: "https://www.world-nuclear-news.org/"
+    method: scrape
+    focus: [nuclear power, SMRs, advanced reactors]
+
+  - name: "ScienceDaily - Energy & Resources"
+    url: "https://www.sciencedaily.com/news/matter_energy/energy_technology/"
+    rss_url: "https://www.sciencedaily.com/rss/matter_energy/energy_technology.xml"
+    method: rss
+    focus: [energy technology breakthroughs]
+
+  - name: "Hacker News (via Algolia API)"
+    url: "https://hn.algolia.com/api"
+    method: api
+    focus: [tech community discussion of energy breakthroughs]
+    notes: >
+      Search API: https://hn.algolia.com/api/v1/search?query=fusion+energy&tags=story
+      Filter by date, points, etc. Good for tracking viral energy stories.
+
+  - name: "MIT News - Energy"
+    url: "https://news.mit.edu/topic/energy"
+    method: scrape
+    focus: [energy research, fusion, solar, materials]
+
+  - name: "Phys.org - Energy"
+    url: "https://phys.org/energy-news/"
+    rss_url: "https://phys.org/rss-feed/nsc/energy/"
+    method: rss
+    focus: [energy research press releases]
+
+# -----------------------------------------------------------------------------
+# 6. STARTUP / INDUSTRY TRACKERS
+# -----------------------------------------------------------------------------
+startup_industry:
+
+  - name: "Fusion Industry Association - Members"
+    url: "https://www.fusionindustryassociation.org/about/members/"
+    method: scrape
+    focus: [fusion companies, suppliers, customers]
+    notes: "Scrape member list periodically for new fusion companies."
+
+  - name: "Fusion Industry Association - Annual Report"
+    url: "https://www.fusionindustryassociation.org/"
+    method: scrape
+    focus: [fusion industry survey, funding data]
+    notes: "Annual report (PDF) tracks global fusion industry. Check for new releases."
+
+  - name: "Cyclotron Road (LBNL / Activate)"
+    url: "https://cyclotronroad.lbl.gov/"
+    method: scrape
+    focus: [hard-tech energy startups, fellowship cohorts]
+    notes: "Fellowship for energy/materials scientists. Track new cohort announcements."
+
+  - name: "Greentown Labs - Members"
+    url: "https://greentownlabs.com/members/"
+    method: scrape
+    focus: [climatetech startups, clean energy]
+    notes: "Largest climatetech incubator in North America. 500+ startups supported."
+
+  - name: "Crunchbase - Nuclear Energy"
+    url: "https://www.crunchbase.com/discover/organizations/field/organization.companies/categories/nuclear"
+    method: api
+    focus: [nuclear startups, funding rounds]
+    notes: "Crunchbase API (paid) or scrape discover pages. Also try categories: solar, energy-storage, clean-energy."
+
+  - name: "Crunchbase - Solar Energy"
+    url: "https://www.crunchbase.com/discover/organizations/field/organization.companies/categories/solar"
+    method: api
+    focus: [solar startups, funding rounds]
+
+  - name: "Crunchbase - Clean Energy"
+    url: "https://www.crunchbase.com/discover/organizations/field/organization.companies/categories/clean-energy"
+    method: api
+    focus: [clean energy startups broadly]
+
+  - name: "Crunchbase - Power Grid"
+    url: "https://www.crunchbase.com/discover/organizations/field/organization.companies/categories/power-grid"
+    method: api
+    focus: [grid-scale power, distributed generation]
+
+  - name: "Y Combinator - Energy Companies"
+    url: "https://www.ycombinator.com/companies?industry=Energy"
+    method: scrape
+    focus: [early-stage energy startups]
+
+  - name: "Breakthrough Energy Ventures Portfolio"
+    url: "https://www.breakthroughenergy.org/our-work/ventures-portfolio/"
+    method: scrape
+    focus: [next-gen energy, fusion, solar, geothermal]
+    notes: "Bill Gates-backed fund. Major investments in Commonwealth Fusion, etc."
+
+# -----------------------------------------------------------------------------
+# 7. PATENT DATABASES
+# -----------------------------------------------------------------------------
+patents:
+
+  - name: "Google Patents - Advanced Search"
+    url: "https://patents.google.com/advanced"
+    method: scrape
+    focus: [all power generation patents]
+    notes: >
+      Search by CPC classification. Key classifications:
+      - Y02E 10/  : Renewable energy (solar, wind, geothermal)
+      - Y02E 30/  : Energy generation of nuclear origin (fission + fusion)
+      - H02S      : PV power generation
+      - H02N      : Electric machines not otherwise provided for (thermoelectric)
+      - G21B      : Fusion reactors
+      - G21C      : Nuclear reactors (fission)
+      - F24S      : Solar heat collectors
+      Example URL: https://patents.google.com/?q=fusion+reactor&after=priority:20250101&oq=fusion+reactor
+
+  - name: "USPTO Full-Text Patent Database"
+    url: "https://ppubs.uspto.gov/pubwebapp/"
+    method: scrape
+    focus: [US patents, power generation]
+    notes: "Patent Public Search (PPUBS). Search by CPC classification codes."
+
+  - name: "USPTO CPC Classification - Y02E (Energy GHG Reduction)"
+    url: "https://www.uspto.gov/web/patents/classification/cpc/html/cpc-Y02E.html"
+    reference_pdf: "https://www.uspto.gov/web/patents/classification/cpc/pdf/cpc-scheme-Y02E.pdf"
+    method: reference
+    focus: [energy generation, transmission, distribution patents]
+    notes: >
+      Key sub-classifications for power generation:
+      Y02E 10/   - Energy generation through renewable energy sources
+      Y02E 10/40 - Solar thermal energy (includes solar towers, CSP)
+      Y02E 10/50 - Photovoltaic energy (PV)
+      Y02E 20/   - Combustion technologies with mitigation potential
+      Y02E 30/   - Energy generation of nuclear origin
+      Y02E 30/10 - Nuclear fusion reactors
+      Y02E 30/30 - Nuclear fission reactors
+      Y02E 40/   - Technologies for an efficient electrical power generation, transmission or distribution
+
+  - name: "USPTO CPC - H02S (Photovoltaic Power Generation)"
+    url: "https://www.uspto.gov/web/patents/classification/cpc/html/cpc-H02S.html"
+    method: reference
+    focus: [solar cell patents, PV systems]
+
+  - name: "USPTO CPC - G21B (Fusion Reactors)"
+    url: "https://www.uspto.gov/web/patents/classification/cpc/html/cpc-G21B.html"
+    method: reference
+    focus: [fusion reactor patents, plasma confinement]
+
+  - name: "PatentsView API (USPTO)"
+    url: "https://patentsview.org/apis/api-endpoints/cpc"
+    method: api
+    focus: [patent analytics, trends, assignee tracking]
+    notes: >
+      REST API for patent data. Filter by CPC codes.
+      Migrating to data.uspto.gov (Open Data Portal) by 2026.
+      Example: query patents in G21B (fusion) or Y02E 10/50 (PV).
+
+  - name: "Google Patents API (via SerpAPI or SearchAPI)"
+    url: "https://www.searchapi.io/docs/google-patents"
+    method: api
+    focus: [patent search automation]
+    notes: "Third-party API wrappers for Google Patents. Paid services."
+
+  - name: "Espacenet (EPO Patent Search)"
+    url: "https://worldwide.espacenet.com/"
+    method: scrape
+    focus: [international patents, CPC search]
+    notes: "European Patent Office. Good for international patent landscape. Same CPC codes apply."

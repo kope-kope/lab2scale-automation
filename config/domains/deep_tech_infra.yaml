@@ -1,0 +1,390 @@
+# =============================================================================
+# Deep Tech Infrastructure - Research Monitoring Source List
+# Categories: Advanced Manufacturing, Materials Science, Compute Infrastructure,
+#             Quantum Computing Hardware, Robotics for Manufacturing,
+#             Additive Manufacturing/3D Printing, Novel Materials, Nanotechnology
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. ACADEMIC LABS
+# -----------------------------------------------------------------------------
+academic_labs:
+
+  # --- MIT ---
+  - name: "MIT DMSE - Dept of Materials Science & Engineering"
+    url: "https://dmse.mit.edu/news/"
+    method: web_scrape
+    notes: "News page; no native RSS. Also aggregated at MIT News."
+
+  - name: "MIT News - Materials Science & Engineering"
+    url: "https://news.mit.edu/topic/materials-science-and-engineering"
+    rss_url: "https://news.mit.edu/topic/materials-science-and-engineering.rss"
+    method: rss
+    notes: "MIT News has RSS per topic."
+
+  - name: "MIT Lincoln Laboratory - News"
+    url: "https://www.ll.mit.edu/news"
+    method: web_scrape
+    notes: "Covers advanced materials, microsystems, semiconductor fab."
+
+  - name: "MIT Lincoln Laboratory - Advanced Materials & Microsystems"
+    url: "https://www.ll.mit.edu/r-d/advanced-technology/advanced-materials-and-microsystems"
+    method: web_scrape
+
+  - name: "MIT Media Lab - Manufacturing Research"
+    url: "https://www.media.mit.edu/research/?filter=everything&tag=manufacturing"
+    method: web_scrape
+    notes: "Filtered research page for manufacturing tag."
+
+  # --- Stanford ---
+  - name: "Stanford MSE - Materials Science & Engineering News"
+    url: "https://mse.stanford.edu/news"
+    method: web_scrape
+
+  - name: "SLAC National Accelerator Laboratory - Materials Science"
+    url: "https://www6.slac.stanford.edu/topics/materials-science"
+    method: web_scrape
+
+  - name: "SLAC - News and Events"
+    url: "https://www6.slac.stanford.edu/news-and-events"
+    method: web_scrape
+
+  # --- UC Berkeley / LBNL ---
+  - name: "LBNL Materials Sciences Division"
+    url: "https://materialssciences.lbl.gov/"
+    method: web_scrape
+
+  - name: "Berkeley Lab News Center"
+    url: "https://newscenter.lbl.gov/"
+    method: web_scrape
+    notes: "Central news hub for all LBNL divisions."
+
+  # --- Caltech ---
+  - name: "Caltech Applied Physics & Materials Science"
+    url: "https://www.aphms.caltech.edu/"
+    method: web_scrape
+
+  - name: "Caltech APHMS - Research"
+    url: "https://www.aphms.caltech.edu/research"
+    method: web_scrape
+
+  # --- Northwestern ---
+  - name: "Northwestern Materials Research Center"
+    url: "https://materials.northwestern.edu/"
+    method: web_scrape
+
+  - name: "Northwestern MRSEC"
+    url: "https://mrsec.northwestern.edu/"
+    method: web_scrape
+    notes: "NSF Materials Research Science & Engineering Center."
+
+  - name: "Northwestern MSE Department"
+    url: "https://www.mccormick.northwestern.edu/materials-science/"
+    method: web_scrape
+
+  # --- Cornell ---
+  - name: "Cornell NanoScale Facility (CNF)"
+    url: "https://www.cnf.cornell.edu/"
+    method: web_scrape
+
+  - name: "Cornell NanoScale Facility - News & Highlights"
+    url: "https://www.cnf.cornell.edu/highlights"
+    method: web_scrape
+
+  # --- Georgia Tech ---
+  - name: "Georgia Tech Manufacturing Institute (GTMI)"
+    url: "https://manufacturing.gatech.edu/"
+    method: web_scrape
+
+  - name: "Georgia Tech News - Manufacturing"
+    url: "https://news.gatech.edu/taxonomy/term/4916"
+    method: web_scrape
+
+
+# -----------------------------------------------------------------------------
+# 2. GOVERNMENT PROGRAMS & NATIONAL LABS
+# -----------------------------------------------------------------------------
+government:
+
+  # --- ARPA-E ---
+  - name: "ARPA-E News & Insights"
+    url: "https://arpa-e.energy.gov/news-and-events/news-and-insights"
+    method: web_scrape
+    notes: "No confirmed RSS. Scrape news page."
+
+  # --- DARPA ---
+  - name: "DARPA News"
+    url: "https://www.darpa.mil/news"
+    method: web_scrape
+    notes: "RSS may be available on-page; fallback to scrape."
+
+  - name: "DARPA R&D Opportunities"
+    url: "https://www.darpa.mil/work-with-us/opportunities"
+    method: web_scrape
+    notes: "Track new program solicitations."
+
+  # --- Manufacturing USA Institutes ---
+  - name: "Manufacturing USA - All Institutes Hub"
+    url: "https://www.manufacturingusa.com/institutes"
+    method: web_scrape
+
+  - name: "ARM Institute (Advanced Robotics for Manufacturing)"
+    url: "https://arminstitute.org/news/"
+    method: web_scrape
+
+  - name: "MxD (Manufacturing x Digital)"
+    url: "https://www.mxdusa.org/"
+    method: web_scrape
+    notes: "Cybersecurity and digital manufacturing."
+
+  - name: "LIFT (Lightweight Innovations for Tomorrow)"
+    url: "https://lift.technology/"
+    method: web_scrape
+    notes: "Advanced lightweight metals manufacturing."
+
+  - name: "NextFlex (Flexible Hybrid Electronics)"
+    url: "https://www.nextflex.us/"
+    method: web_scrape
+
+  - name: "AIM Photonics"
+    url: "https://www.aimphotonics.com/news"
+    method: web_scrape
+
+  # --- NSF ---
+  - name: "NSF Convergence Accelerator - Portfolio"
+    url: "https://www.nsf.gov/funding/initiatives/convergence-accelerator/portfolio"
+    method: web_scrape
+    notes: "Active research tracks."
+
+  - name: "NSF Convergence Accelerator - Main"
+    url: "https://www.nsf.gov/funding/initiatives/convergence-accelerator"
+    method: web_scrape
+
+  # --- DOE National Labs ---
+  - name: "ORNL Manufacturing Science Division News"
+    url: "https://www.ornl.gov/division/manufacturing-science/news"
+    method: web_scrape
+
+  - name: "ORNL Advanced Manufacturing & Industrial Decarbonization"
+    url: "https://www.ornl.gov/advancedmanufacturing/news"
+    method: web_scrape
+
+  - name: "ORNL Manufacturing Demonstration Facility (MDF)"
+    url: "https://www.energy.gov/cmei/ammto/manufacturing-demonstration-facility-mdf-oak-ridge-national-laboratory"
+    method: web_scrape
+
+  - name: "Sandia National Laboratories - News Releases"
+    url: "https://newsreleases.sandia.gov/"
+    method: web_scrape
+    notes: "Filter for manufacturing/materials topics."
+
+  - name: "Sandia Lab News"
+    url: "https://www.sandia.gov/labnews/"
+    method: web_scrape
+
+
+# -----------------------------------------------------------------------------
+# 3. ACADEMIC PUBLICATIONS
+# -----------------------------------------------------------------------------
+publications:
+
+  - name: "Nature Materials"
+    url: "https://www.nature.com/nmat/"
+    rss_url: "https://www.nature.com/nmat.rss"
+    method: rss
+    notes: "Official RSS. Also available: http://feeds.nature.com/nmat/rss/current"
+
+  - name: "Nature Materials - Web Feeds Hub"
+    url: "https://www.nature.com/nmat/web-feeds"
+    method: rss
+    notes: "Lists all available RSS/Atom feeds for the journal."
+
+  - name: "Advanced Materials (Wiley)"
+    url: "https://advanced.onlinelibrary.wiley.com/journal/15214095"
+    rss_url: "https://advanced.onlinelibrary.wiley.com/feed/15214095/most-recent"
+    method: rss
+    notes: "Wiley RSS pattern. Check journal page for exact feed link."
+
+  - name: "Science Robotics"
+    url: "https://www.science.org/journal/scirobotics"
+    rss_url: "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
+    method: rss
+    notes: "AAAS TOC RSS feed pattern."
+
+  - name: "Additive Manufacturing (Elsevier/ScienceDirect)"
+    url: "https://www.sciencedirect.com/journal/additive-manufacturing"
+    method: web_scrape
+    notes: "Elsevier supports RSS via ScienceDirect but URL must be found on journal page."
+
+
+# -----------------------------------------------------------------------------
+# 4. arXiv CATEGORIES
+# -----------------------------------------------------------------------------
+arxiv:
+
+  - name: "arXiv - Materials Science (cond-mat.mtrl-sci)"
+    url: "https://arxiv.org/list/cond-mat.mtrl-sci/recent"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    method: rss
+    notes: "Structures, synthesis, characterization, mechanical properties, defects."
+
+  - name: "arXiv - Mesoscale & Nanoscale Physics (cond-mat.mes-hall)"
+    url: "https://arxiv.org/list/cond-mat.mes-hall/recent"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mes-hall"
+    method: rss
+    notes: "Covers nanotechnology, nanostructures, quantum dots."
+
+  - name: "arXiv - Quantum Physics (quant-ph)"
+    url: "https://arxiv.org/list/quant-ph/recent"
+    rss_url: "https://rss.arxiv.org/rss/quant-ph"
+    method: rss
+    notes: "Quantum computing hardware, algorithms, error correction."
+
+  - name: "arXiv - Applied Physics (physics.app-ph)"
+    url: "https://arxiv.org/list/physics.app-ph/recent"
+    rss_url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    notes: "Applied physics including device fabrication."
+
+  - name: "arXiv - Robotics (cs.RO)"
+    url: "https://arxiv.org/list/cs.RO/recent"
+    rss_url: "https://rss.arxiv.org/rss/cs.RO"
+    method: rss
+    notes: "Robotics research including manufacturing applications."
+
+  - name: "arXiv - Systems and Control (eess.SY)"
+    url: "https://arxiv.org/list/eess.SY/recent"
+    rss_url: "https://rss.arxiv.org/rss/eess.SY"
+    method: rss
+    notes: "Control systems relevant to manufacturing automation."
+
+  - name: "arXiv - Combined Deep Tech Feed"
+    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci+quant-ph+physics.app-ph+cs.RO"
+    method: rss
+    notes: "Combined feed. Max 2000 results. Use + to join categories."
+
+
+# -----------------------------------------------------------------------------
+# 5. NEWS SOURCES
+# -----------------------------------------------------------------------------
+news:
+
+  - name: "MIT Technology Review"
+    url: "https://www.technologyreview.com/"
+    rss_url: "https://www.technologyreview.com/feed/"
+    method: rss
+    notes: "Main feed. Topic feeds also at /topic/[topic]/feed/."
+
+  - name: "Ars Technica - Science"
+    url: "https://arstechnica.com/science/"
+    rss_url: "https://feeds.arstechnica.com/arstechnica/science"
+    method: rss
+
+  - name: "3D Printing Industry"
+    url: "https://3dprintingindustry.com/"
+    rss_url: "https://3dprintingindustry.com/feed/"
+    method: rss
+
+  - name: "Manufacturing.net"
+    url: "https://www.manufacturing.net/"
+    rss_url: "https://www.manufacturing.net/rss/34"
+    method: rss
+    notes: "Top Stories feed. Also /rss/33 (Headlines), /rss/35 (Highlights)."
+
+  - name: "TechCrunch - Hardware"
+    url: "https://techcrunch.com/category/hardware/"
+    rss_url: "https://techcrunch.com/category/hardware/feed/"
+    method: rss
+
+  - name: "TechCrunch - Startups"
+    url: "https://techcrunch.com/category/startups/"
+    rss_url: "https://techcrunch.com/category/startups/feed/"
+    method: rss
+
+  - name: "IEEE Spectrum - Manufacturing"
+    url: "https://spectrum.ieee.org/topic/manufacturing/"
+    method: web_scrape
+    notes: "Bonus source. IEEE Spectrum covers deep tech manufacturing extensively."
+
+
+# -----------------------------------------------------------------------------
+# 6. ACCELERATORS & VCs
+# -----------------------------------------------------------------------------
+accelerators_vcs:
+
+  - name: "HAX - Portfolio"
+    url: "https://hax.co/startups/"
+    method: web_scrape
+    notes: "Pre-seed hard tech accelerator. Portfolio of 200+ hardware startups."
+
+  - name: "HAX - Program"
+    url: "https://hax.co/program/"
+    method: web_scrape
+
+  - name: "The Engine (MIT) - Accelerator"
+    url: "https://engine.xyz/"
+    method: web_scrape
+    notes: "MIT-born tough tech incubator. Biotech, climate, advanced systems."
+
+  - name: "Engine Ventures - Portfolio"
+    url: "https://engineventures.com/companies"
+    method: web_scrape
+    notes: "56+ companies. Separate VC entity from The Engine accelerator."
+
+  - name: "Cyclotron Road (Berkeley Lab)"
+    url: "https://cyclotronroad.lbl.gov/"
+    method: web_scrape
+    notes: "Lab-embedded entrepreneurship. $3B+ in follow-on funding to alumni."
+
+  - name: "Lux Capital - Portfolio"
+    url: "https://www.luxcapital.com/companies"
+    method: web_scrape
+    notes: "200+ companies in AI, robotics, materials, aerospace, defense."
+
+  - name: "DCVC - Portfolio"
+    url: "https://www.dcvc.com/companies/"
+    method: web_scrape
+    notes: "Deep tech VC. 370+ companies. Climate, energy, manufacturing, bio."
+
+  - name: "Applied Ventures (Applied Materials) - Portfolio"
+    url: "https://www.appliedmaterials.com/us/en/applied-ventures/portfolio.html"
+    method: web_scrape
+    notes: "$400M+ fund. Filterable by Advanced Manufacturing, Advanced Materials, etc."
+
+  - name: "Applied Ventures - News"
+    url: "https://www.appliedmaterials.com/us/en/applied-ventures/news.html"
+    method: web_scrape
+
+
+# -----------------------------------------------------------------------------
+# 7. STARTUP DATABASES
+# -----------------------------------------------------------------------------
+startup_databases:
+
+  - name: "Crunchbase - Advanced Materials Companies"
+    url: "https://www.crunchbase.com/hub/advanced-materials-companies"
+    method: api
+    api_notes: "Crunchbase API (paid). Hub page scrapable but rate-limited."
+
+  - name: "Crunchbase - Advanced Materials Startups"
+    url: "https://www.crunchbase.com/hub/advanced-materials-startups"
+    method: api
+
+  - name: "Crunchbase - US Advanced Materials Companies"
+    url: "https://www.crunchbase.com/hub/united-states-advanced-materials-companies"
+    method: api
+
+  - name: "Y Combinator - Hard Tech Companies"
+    url: "https://www.ycombinator.com/companies/industry/hard-tech"
+    method: web_scrape
+    notes: "88+ hard tech startups funded by YC. Filterable directory."
+
+  - name: "Y Combinator - Full Directory"
+    url: "https://www.ycombinator.com/companies"
+    method: web_scrape
+    notes: "Filter by industry tags: hard-tech, hardware, robotics, etc."
+
+  - name: "YCDB - YC Company Database (Third Party)"
+    url: "https://www.ycdb.co/"
+    method: web_scrape
+    notes: "Community-maintained. More filterable than official directory."

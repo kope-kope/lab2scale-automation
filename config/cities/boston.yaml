@@ -1,0 +1,200 @@
+# =============================================================================
+# Boston / Cambridge Event Tracking - Source Configuration
+# =============================================================================
+# Focus: Power generation, energy storage, power electronics, semiconductors,
+#         advanced manufacturing, deep tech infrastructure
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. UNIVERSITY EVENT CALENDARS
+# -----------------------------------------------------------------------------
+university_events:
+
+  # --- MIT ---
+  - name: "MIT Energy Initiative Events"
+    url: "https://energy.mit.edu/events/"
+    calendar_url: "https://calendar.mit.edu/department/mit_energy_initiative"
+    rss_url: "https://calendar.mit.edu/department/mit_energy_initiative/calendar.rss"
+    method: rss
+    notes: "Localist platform. RSS and iCal feeds supported natively."
+
+  - name: "MIT PSFC Seminars & Events"
+    url: "https://www.psfc.mit.edu/seminars-and-events/"
+    method: web_scrape
+    notes: "Plasma Science and Fusion Center. Fusion/plasma seminars."
+
+  - name: "MIT MTL Events & Seminars"
+    url: "https://www.mtl.mit.edu/events-seminars"
+    method: web_scrape
+    notes: "Microsystems Technology Laboratories. Semiconductor seminars."
+
+  - name: "MIT Lincoln Lab Events"
+    url: "https://www.ll.mit.edu/news/events"
+    method: web_scrape
+    notes: "Advanced materials, microsystems, defense tech."
+
+  - name: "MIT Media Lab Events"
+    url: "https://www.media.mit.edu/events/"
+    method: web_scrape
+    notes: "Filter for manufacturing and hardware events."
+
+  - name: "MIT DMSE Seminars"
+    url: "https://dmse.mit.edu/events/"
+    method: web_scrape
+    notes: "Materials Science seminars."
+
+  # --- Harvard ---
+  - name: "Harvard SEAS Events"
+    url: "https://events.seas.harvard.edu/"
+    rss_url: "https://events.seas.harvard.edu/calendar.rss"
+    method: rss
+    notes: "Localist platform with RSS support."
+
+  - name: "Harvard Power & AI Initiative Events"
+    url: "https://pai.seas.harvard.edu/Events.html"
+    method: web_scrape
+    notes: "Power systems + AI intersection."
+
+  - name: "Harvard Center for the Environment Events"
+    url: "https://environment.harvard.edu/events"
+    method: web_scrape
+    notes: "Energy and climate events."
+
+  # --- Other Boston Universities ---
+  - name: "Northeastern University Engineering Events"
+    url: "https://coe.northeastern.edu/events/"
+    method: web_scrape
+
+  - name: "Boston University Engineering Events"
+    url: "https://www.bu.edu/eng/events/"
+    method: web_scrape
+
+  - name: "Tufts Engineering Events"
+    url: "https://engineering.tufts.edu/events"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 2. INCUBATORS / ACCELERATORS
+# -----------------------------------------------------------------------------
+incubators:
+
+  - name: "Greentown Labs Events"
+    url: "https://greentownlabs.com/events/"
+    rss_url: "https://greentownlabs.com/events/feed/"
+    method: rss
+    notes: "Largest climatetech incubator. WordPress + The Events Calendar plugin. Try RSS first."
+
+  - name: "The Engine (MIT) Events"
+    url: "https://engine.xyz/events"
+    method: web_scrape
+    notes: "MIT-born tough tech incubator/accelerator."
+
+  - name: "Engine Ventures Events"
+    url: "https://engineventures.com/events"
+    method: web_scrape
+
+  - name: "MassRobotics Events"
+    url: "https://www.massrobotics.org/events/"
+    rss_url: "https://www.massrobotics.org/events/feed/"
+    method: rss
+    notes: "Robotics/manufacturing innovation hub. Try RSS first."
+
+  - name: "CIC Boston Events"
+    url: "https://cic.com/boston/events"
+    method: web_scrape
+    notes: "Cambridge Innovation Center. Innovation community events."
+
+  - name: "Activate (Cambridge site) Events"
+    url: "https://activate.org/events"
+    method: web_scrape
+    notes: "Hard-tech fellowship. Cambridge is one of their sites."
+
+# -----------------------------------------------------------------------------
+# 3. INDUSTRY / TRADE ORGANIZATIONS
+# -----------------------------------------------------------------------------
+industry_orgs:
+
+  - name: "MassCEC Events"
+    url: "https://www.masscec.com/events"
+    method: web_scrape
+    notes: "Massachusetts Clean Energy Center. Workshops, conferences, networking."
+
+  - name: "ACT (formerly NECEC) Events"
+    url: "https://joinact.org/events"
+    method: web_scrape
+    notes: "Advanced Clean Transportation / New England Clean Energy Council successor."
+
+  - name: "IEEE Boston Section - PES Chapter"
+    url: "https://site.ieee.org/boston-pes/calendar/"
+    method: web_scrape
+    notes: "Power & Energy Society events."
+
+  - name: "IEEE Boston Section Events"
+    url: "https://r1.ieee.org/boston/"
+    method: web_scrape
+
+  - name: "SEMI Events Calendar (filter Boston/Northeast)"
+    url: "https://www.semi.org/en/connect/events/calendar"
+    method: web_scrape
+    notes: "Global calendar. Filter for Northeast US."
+
+  - name: "New England Clean Energy Connect"
+    url: "https://www.cleanenergynh.org/events"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 4. EVENT AGGREGATORS
+# -----------------------------------------------------------------------------
+aggregators:
+
+  - name: "Eventbrite Boston - Science & Technology"
+    url: "https://www.eventbrite.com/d/ma--boston/science-and-tech--events/"
+    method: api
+    notes: "Eventbrite API. Filter by location=Boston, category=Science & Technology."
+
+  - name: "Eventbrite Boston - Energy Events"
+    url: "https://www.eventbrite.com/d/ma--boston/energy/"
+    method: api
+
+  - name: "Luma Boston"
+    url: "https://luma.com/boston"
+    method: web_scrape
+    notes: "JS-rendered. May need headless browser or intercept internal API."
+
+  - name: "Meetup - Boston Green Tech & Energy"
+    url: "https://www.meetup.com/boston-green-tech-and-energy/"
+    method: api
+    notes: "Meetup GraphQL API. Green tech networking. Organized by power electronics engineer."
+
+  - name: "Meetup - Boston Hardware Startups"
+    url: "https://www.meetup.com/topics/hardware-startups/us/ma/boston/"
+    method: api
+
+  - name: "Built In Boston Events"
+    url: "https://www.builtinboston.com/events"
+    method: web_scrape
+
+# -----------------------------------------------------------------------------
+# 5. RECURRING CONFERENCES
+# -----------------------------------------------------------------------------
+conferences:
+
+  - name: "MIT Energy Conference"
+    url: "https://www.mitenergyconference.org/"
+    method: web_scrape
+    notes: "Annual student-organized energy conference at MIT. Spring."
+
+  - name: "IEEE PES T&D Conference (when in Boston)"
+    url: "https://ieee-td.org/"
+    method: web_scrape
+    notes: "Biennial. Check if upcoming edition is in Boston."
+
+  - name: "Boston Convention & Exhibition Center Calendar"
+    url: "https://www.signatureboston.com/bcec/calendar"
+    method: web_scrape
+    notes: "Major convention center. Hosts trade shows and industry events."
+
+  - name: "MassCEC Annual Summit"
+    url: "https://www.masscec.com/events"
+    method: web_scrape
+    notes: "Annual clean energy summit."

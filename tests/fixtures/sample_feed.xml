@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sample Energy Storage Feed</title>
+    <link>https://example.com/feed</link>
+    <description>Test fixture for Scraper RSS parsing.</description>
+    <item>
+      <title>Solid-state battery achieves 1000-cycle stability</title>
+      <link>https://example.com/papers/solid-state-1000</link>
+      <description>Researchers demonstrate a durable solid-state lithium cell.</description>
+      <pubDate>Mon, 25 May 2026 09:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Flow battery cuts cost of grid storage by 40%</title>
+      <link>https://example.com/papers/flow-battery-cost</link>
+      <description>A new vanadium-free flow chemistry lowers levelized storage cost.</description>
+      <pubDate>Tue, 26 May 2026 14:30:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

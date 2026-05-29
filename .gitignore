@@ -18,5 +18,8 @@ data/*.sqlite3
 # Reports / generated output
 data/latest_report.html
 
+# Local scratch / experimentation scripts (kept locally, never committed)
+scripts/try_*.py
+
 # OS
 .DS_Store

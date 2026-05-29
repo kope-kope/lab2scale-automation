@@ -173,6 +173,72 @@ def test_domain_agent_dedups_on_rerun(tmp_path):
     assert len(findings) == 2              # no duplicate rows
 
 
+def test_kept_item_not_marked_seen_when_extraction_fails(tmp_path):
+    """Crash-safety: an item that passes scoring but fails to persist must stay
+    un-seen so the next sweep retries it (rather than silently dropping it)."""
+
+    class FailingExtractLLM:
+        async def score_relevance(self, content, focus_area):
+            return 9.0  # everything passes
+
+        async def extract_structured_data(self, content, focus_area):
+            raise RuntimeError("extraction service down")
+
+    async def body():
+        store = await _fresh_store()
+        dedup = Deduplicator(store)
+        agent = DomainAgent(
+            _write_config(tmp_path), FakeScraper(FEEDS), FailingExtractLLM(),
+            dedup, store, methods={"rss"}, threshold=6.0,
+        )
+        stats = await agent.run()
+        # The solid-state item passed scoring but extraction failed — it must
+        # NOT be recorded as seen.
+        h = dedup.compute_hash("https://ex.com/a1", "Solid-state battery breakthrough")
+        seen = await dedup.is_seen(h)
+        findings = await store.get_unreported_findings()
+        await store.close()
+        return stats, seen, findings
+
+    stats, seen, findings = asyncio.run(body())
+    assert stats["new_items"] == 0
+    assert stats["errors"] >= 1
+    assert seen is False          # retryable on the next sweep
+    assert len(findings) == 0
+
+
+def test_source_with_only_rss_url_is_fetched(tmp_path):
+    """Some configs put the feed in `rss_url` (no `url`) — it must still be
+    discovered and fetched (this is how arXiv categories are configured)."""
+    cfg = tmp_path / "energy_storage.yaml"
+    cfg.write_text(
+        "arxiv:\n"
+        '  - name: "arXiv materials"\n'
+        '    rss_url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"\n'
+        "    method: rss\n"
+    )
+    feeds = {
+        "https://rss.arxiv.org/rss/cond-mat.mtrl-sci": [
+            {"title": "Solid-state battery breakthrough", "link": "https://ex.com/a1",
+             "summary": "great", "published": "2026-05-25"},
+        ],
+    }
+
+    async def body():
+        store = await _fresh_store()
+        agent = DomainAgent(str(cfg), FakeScraper(feeds), FakeLLM(SCORES),
+                            Deduplicator(store), store, methods={"rss"}, threshold=6.0)
+        stats = await agent.run()
+        findings = await store.get_unreported_findings()
+        await store.close()
+        return stats, findings
+
+    stats, findings = asyncio.run(body())
+    assert stats["sources"] == 1      # counted despite having no `url`
+    assert stats["new_items"] == 1    # and actually fetched via rss_url
+    assert findings[0]["source_url"] == "https://ex.com/a1"
+
+
 def test_failing_source_does_not_crash_sweep(tmp_path):
     async def body():
         cfg = tmp_path / "energy_storage.yaml"

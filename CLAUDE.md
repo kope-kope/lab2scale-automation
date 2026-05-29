@@ -83,3 +83,9 @@ After building each module, test it independently before moving on. The spec has
   separate checkpoint the user approves.
 - Leave changes uncommitted in the working tree for review; do not assume that
   resolving one open question is approval to commit.
+- Do NOT run commands that hit the paid Claude API during verification
+  (`main.py sweep`/`report`, `scripts/try_*.py` against a real `.env`). Verify
+  with the offline test suite; only run live with explicit user approval.
+  Gotcha: `main.py` calls `load_dotenv()` with `override=False`, so
+  `env -u ANTHROPIC_API_KEY` still loads the key from `.env`. For a free CLI
+  wiring check, pass a bogus key instead: `ANTHROPIC_API_KEY=disabled python …`.

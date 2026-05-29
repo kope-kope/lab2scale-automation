@@ -435,22 +435,67 @@ startup_trackers:
     notes: >
       Tracks recent semiconductor startup funding rounds.
 
-  # Key semiconductor-focused VCs to monitor:
-  semiconductor_vcs:
-    - name: "Intel Capital"
-      url: "https://www.intelcapital.com/"
-    - name: "TSMC Ventures"
-      url: "https://www.tsmc.com/"
-      notes: "Investment arm — no standalone site; track via TSMC press releases"
-    - name: "Eclipse Ventures"
-      url: "https://www.eclipse.vc/"
-      notes: "Deep-tech / hardware VC with semiconductor portfolio"
-    - name: "Walden Catalyst"
-      url: "https://www.waldencatalyst.com/"
-      notes: "Focused on semiconductor and deep-tech startups"
-    - name: "Cantos Ventures"
-      url: "https://www.cantosvc.com/"
-      notes: "Seed-stage semiconductor and hardware investing"
-    - name: "Sierra Ventures"
-      url: "https://www.sierraventures.com/"
-      notes: "Enterprise tech including semiconductor investments"
+# -----------------------------------------------------------------------------
+# 8. SEMICONDUCTOR-FOCUSED VCs (to monitor)
+# -----------------------------------------------------------------------------
+semiconductor_vcs:
+
+  - name: "Intel Capital"
+    url: "https://www.intelcapital.com/"
+    method: web_scrape
+
+  - name: "TSMC Ventures"
+    url: "https://www.tsmc.com/"
+    method: web_scrape
+    notes: "Investment arm — no standalone site; track via TSMC press releases"
+
+  - name: "Eclipse Ventures"
+    url: "https://www.eclipse.vc/"
+    method: web_scrape
+    notes: "Deep-tech / hardware VC with semiconductor portfolio"
+
+  - name: "Walden Catalyst"
+    url: "https://www.waldencatalyst.com/"
+    method: web_scrape
+    notes: "Focused on semiconductor and deep-tech startups"
+
+  - name: "Cantos Ventures"
+    url: "https://www.cantosvc.com/"
+    method: web_scrape
+    notes: "Seed-stage semiconductor and hardware investing"
+
+  - name: "Sierra Ventures"
+    url: "https://www.sierraventures.com/"
+    method: web_scrape
+    notes: "Enterprise tech including semiconductor investments"
+
+# -----------------------------------------------------------------------------
+# 9. arXiv CATEGORIES
+# -----------------------------------------------------------------------------
+# RSS feed format: https://rss.arxiv.org/rss/{category}
+arxiv:
+
+  - name: "arXiv - Mesoscale & Nanoscale Physics (cond-mat.mes-hall)"
+    url: "https://rss.arxiv.org/rss/cond-mat.mes-hall"
+    method: rss
+    focus: [nanoelectronics, quantum devices, 2D materials]
+
+  - name: "arXiv - Applied Physics (physics.app-ph)"
+    url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    focus: [device fabrication, compound semiconductors]
+
+  - name: "arXiv - Optics (physics.optics)"
+    url: "https://rss.arxiv.org/rss/physics.optics"
+    method: rss
+    focus: [photonics, silicon photonics, integrated optics]
+
+  - name: "arXiv - Materials Science (cond-mat.mtrl-sci)"
+    url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci"
+    method: rss
+    focus: [advanced packaging materials, compound semiconductors]
+
+  - name: "arXiv - Combined Semiconductor Feed"
+    url: "https://rss.arxiv.org/rss/cond-mat.mes-hall+physics.app-ph+physics.optics"
+    method: rss
+    notes: "Composite feed across nanoscale, applied physics, and optics."

@@ -74,3 +74,12 @@ After building each module, test it independently before moving on. The spec has
 - LLM failures: retry 3x, fallback to saving raw item with score=0
 - Email failures: retry 3x, save HTML to disk as fallback
 - Rate limiting: respect Retry-After headers, 2 req/sec per domain max
+
+## Working Agreement (review cadence)
+
+- ALWAYS hold for the user's review before committing, pushing, merging, or
+  starting the next task/day. Build → report → wait for an explicit "go".
+- Never bundle commit + push + merge + next-branch into one step. Each is a
+  separate checkpoint the user approves.
+- Leave changes uncommitted in the working tree for review; do not assume that
+  resolving one open question is approval to commit.

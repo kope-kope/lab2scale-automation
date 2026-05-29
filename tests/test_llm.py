@@ -137,6 +137,24 @@ def test_extract_coerces_string_researcher_to_list():
     assert result["researchers"] == ["Solo Author"]
 
 
+def test_extract_coerces_nullish_strings_to_none():
+    payload = {
+        "title": "t",
+        "summary": "s",
+        "affiliation": "null",          # literal string the model emits for "absent"
+        "contact_info": "None",
+        "trl_estimate": "",
+        "researchers": ["null", "Dr. Real", "N/A"],
+    }
+    client = FakeClient(lambda kw: _tool_response(payload))
+    f = LLMFilter(client=client)
+    result = asyncio.run(f.extract_structured_data("c", "energy_storage"))
+    assert result["affiliation"] is None
+    assert result["contact_info"] is None
+    assert result["trl_estimate"] is None
+    assert result["researchers"] == ["Dr. Real"]  # nullish entries dropped
+
+
 def test_extract_returns_shaped_dict_on_api_error():
     client = FakeClient(lambda kw: RuntimeError("boom"))
     f = LLMFilter(client=client)

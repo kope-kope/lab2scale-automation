@@ -22,7 +22,7 @@ DEFAULT_SCORING_MODEL = "claude-haiku-4-5"
 DEFAULT_SUMMARY_MODEL = "claude-sonnet-4-6"
 
 # Items scoring at or above this are kept (per spec).
-RELEVANCE_THRESHOLD = 8.0
+RELEVANCE_THRESHOLD = 6.0
 
 # Cap content sent to the model to keep token cost bounded.
 _MAX_CONTENT_CHARS = 6000
@@ -86,6 +86,14 @@ _EXTRACTION_FIELDS = (
     "title", "summary", "researchers", "affiliation",
     "contact_info", "trl_estimate", "source_type",
 )
+
+# Models often emit these as a literal field value when a field is absent
+# (the extraction prompt says "use null"). Treat them as missing.
+_NULLISH = {"", "null", "none", "n/a", "na", "unknown", "not found", "not specified"}
+
+
+def _is_nullish(value) -> bool:
+    return isinstance(value, str) and value.strip().lower() in _NULLISH
 
 SUMMARY_SYSTEM_PROMPT = (
     "You are the lead intelligence analyst for Lab2Scale, a deep tech "
@@ -217,10 +225,19 @@ class LLMFilter:
     @staticmethod
     def _normalize_extraction(data: dict) -> dict:
         result = {field: data.get(field) for field in _EXTRACTION_FIELDS}
-        if result["researchers"] is None:
-            result["researchers"] = []
-        elif isinstance(result["researchers"], str):
-            result["researchers"] = [result["researchers"]]
+        # Coerce literal "null"/"none"/"" strings to real None.
+        for field in _EXTRACTION_FIELDS:
+            if _is_nullish(result[field]):
+                result[field] = None
+        # researchers → a clean list of real names.
+        researchers = result["researchers"]
+        if researchers is None:
+            researchers = []
+        elif isinstance(researchers, str):
+            researchers = [researchers]
+        result["researchers"] = [
+            r for r in researchers if isinstance(r, str) and not _is_nullish(r)
+        ]
         return result
 
     async def generate_weekly_summary(self, findings: list[dict], events: list[dict]) -> str:

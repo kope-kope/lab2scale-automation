@@ -74,6 +74,10 @@ class BaseAgent(ABC):
         self._skipped = 0   # duplicates (already seen in a prior sweep) + table dups
         self._filtered = 0  # scored below threshold
         self._errors = 0
+        # Hashes scored in THIS run. Lets us skip items that appear in
+        # overlapping feeds without persisting "seen" before the finding is
+        # saved — so an interrupted run never silently drops kept items.
+        self._seen_this_run: set[str] = set()
 
     # ----- source discovery ------------------------------------------------
 
@@ -86,7 +90,11 @@ class BaseAgent(ABC):
             if not isinstance(value, list):
                 continue
             for item in value:
-                if not (isinstance(item, dict) and item.get("url") and item.get("method")):
+                if not isinstance(item, dict) or not item.get("method"):
+                    continue
+                # A source needs a fetchable URL: some configs use `url`, others
+                # put the feed in `rss_url` (e.g. arXiv categories).
+                if not (item.get("url") or item.get("rss_url")):
                     continue
                 if self.methods is not None and normalize_method(item["method"]) not in self.methods:
                     continue
@@ -115,10 +123,11 @@ class BaseAgent(ABC):
 
     async def _fetch_source(self, source: dict) -> list[dict]:
         method = normalize_method(source.get("method"))
-        url = source["url"]
-        name = source.get("name", url)
+        name = source.get("name") or source.get("url") or source.get("rss_url") or "?"
         if method == "rss":
-            items = await self.scraper.fetch_rss(url)
+            # Prefer an explicit feed URL (rss_url) over a page URL (url).
+            feed_url = source.get("rss_url") or source.get("url")
+            items = await self.scraper.fetch_rss(feed_url)
         else:
             # web scraping (Day 5) and API sources are not handled yet.
             self.log.debug("Skipping %s source: %s", method, name)
@@ -138,23 +147,21 @@ class BaseAgent(ABC):
                 continue
 
             content_hash = self.dedup.compute_hash(url, title)
+            if content_hash in self._seen_this_run:  # overlapping feeds, same run
+                self._skipped += 1
+                continue
             try:
-                if await self.dedup.is_seen(content_hash):
+                if await self.dedup.is_seen(content_hash):  # seen in a prior sweep
                     self._skipped += 1
                     continue
             except Exception as exc:  # noqa: BLE001
                 self._errors += 1
                 self.log.error("dedup check failed for %s: %s", url, exc)
                 continue
+            self._seen_this_run.add(content_hash)
 
             content = self._item_content(item)
             score = await self.llm.score_relevance(content, self.focus_area)
-
-            # Mark seen now so the next sweep won't re-score this item.
-            try:
-                await self.dedup.mark_seen(content_hash, item.get("source_name", self.name))
-            except Exception as exc:  # noqa: BLE001
-                self.log.error("mark_seen failed for %s: %s", url, exc)
 
             if score >= self.threshold:
                 item["_hash"] = content_hash
@@ -163,6 +170,8 @@ class BaseAgent(ABC):
                 kept.append(item)
             else:
                 self._filtered += 1
+                # Below threshold and nothing to persist — safe to mark seen now.
+                await self._mark_seen(content_hash, item.get("source_name", self.name))
 
         self.log.info(
             "Scored %d items: %d kept (>= %.1f), %d below threshold, %d duplicates",
@@ -186,8 +195,17 @@ class BaseAgent(ABC):
                 saved += 1
             else:
                 self._skipped += 1  # already present in the table
+            # Mark seen only AFTER persistence, so an interrupted run leaves
+            # un-saved kept items un-seen and they get retried next sweep.
+            await self._mark_seen(item["_hash"], item.get("source_name", self.name))
         self.log.info("Saved %d new items (%d duplicates skipped)", saved, self._skipped)
         return saved
+
+    async def _mark_seen(self, content_hash: str, source: str) -> None:
+        try:
+            await self.dedup.mark_seen(content_hash, source)
+        except Exception as exc:  # noqa: BLE001
+            self.log.error("mark_seen failed for %s: %s", content_hash, exc)
 
     @staticmethod
     def _item_content(item: dict) -> str:
@@ -206,6 +224,7 @@ class BaseAgent(ABC):
         new_items = await self.extract_and_store(kept)
         return {
             "agent": self.name,
+            "sources": len(self.iter_sources()),
             "new_items": new_items,
             "skipped": self._skipped,
             "errors": self._errors,

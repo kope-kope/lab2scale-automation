@@ -39,12 +39,44 @@ async def init_db() -> None:
     log.info("Database initialized — all tables created")
 
 
+def _print_sweep_summary(result: dict) -> None:
+    """Print a per-domain summary table for a System 1 sweep."""
+    domains = result.get("domains", {})
+    totals = result.get("totals", {})
+    print("\nSystem 1 — Research sweep")
+    header = f"{'domain':<20}{'sources':>9}{'fetched':>9}{'filtered':>9}{'saved':>7}{'errors':>8}"
+    print(header)
+    print("-" * len(header))
+    for domain, s in domains.items():
+        if "error" in s:
+            print(f"{domain:<20}  CRASHED: {s['error']}")
+            continue
+        print(f"{domain:<20}{s.get('sources', 0):>9}{s.get('fetched', 0):>9}"
+              f"{s.get('filtered', 0):>9}{s.get('new_items', 0):>7}{s.get('errors', 0):>8}")
+    print("-" * len(header))
+    print(f"{'TOTAL':<20}{totals.get('sources', 0):>9}{totals.get('fetched', 0):>9}"
+          f"{totals.get('filtered', 0):>9}{totals.get('new_items', 0):>7}{totals.get('errors', 0):>8}\n")
+
+
+async def sweep() -> None:
+    """Run System 1 (research monitoring) over RSS sources and persist findings."""
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        log.warning(
+            "ANTHROPIC_API_KEY is not set — LLM scoring will fail and no findings "
+            "will be saved. Set it in .env to get real results."
+        )
+    # Imported here so `init-db` works even before System 2/3 modules exist.
+    from systems.system1_research.orchestrator import ResearchOrchestrator
+
+    result = await ResearchOrchestrator().run()
+    _print_sweep_summary(result)
+
+
 async def run(command: str) -> None:
     if command == "init-db":
         await init_db()
     elif command == "sweep":
-        # Systems 1 & 2 — implemented in later tasks (Days 3-6).
-        log.warning("'sweep' is not implemented yet")
+        await sweep()
     elif command == "report":
         # System 3 — implemented in a later task (Day 7).
         log.warning("'report' is not implemented yet")

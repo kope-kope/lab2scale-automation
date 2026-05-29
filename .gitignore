@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Environment
+.env
+
+# Database
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Reports / generated output
+data/latest_report.html
+
+# OS
+.DS_Store

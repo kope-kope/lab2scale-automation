@@ -58,17 +58,31 @@ def _print_sweep_summary(result: dict) -> None:
           f"{totals.get('filtered', 0):>9}{totals.get('new_items', 0):>7}{totals.get('errors', 0):>8}\n")
 
 
+def _sweep_methods() -> set[str]:
+    """Which source methods this sweep should fetch.
+
+    Default is ``{"rss"}`` — cost-safe. To include web-scrape sources (which
+    are large in number and can ~triple the per-sweep cost on the first run),
+    set ``SWEEP_METHODS=rss,scrape`` in the environment.
+    """
+    raw = os.getenv("SWEEP_METHODS", "rss")
+    methods = {m.strip().lower() for m in raw.split(",") if m.strip()}
+    return methods or {"rss"}
+
+
 async def sweep() -> None:
-    """Run System 1 (research monitoring) over RSS sources and persist findings."""
+    """Run System 1 (research monitoring) and persist findings."""
     if not os.getenv("ANTHROPIC_API_KEY"):
         log.warning(
             "ANTHROPIC_API_KEY is not set — LLM scoring will fail and no findings "
             "will be saved. Set it in .env to get real results."
         )
+    methods = _sweep_methods()
+    log.info("Sweep methods: %s", ", ".join(sorted(methods)))
     # Imported here so `init-db` works even before System 2/3 modules exist.
     from systems.system1_research.orchestrator import ResearchOrchestrator
 
-    result = await ResearchOrchestrator().run()
+    result = await ResearchOrchestrator(methods=methods).run()
     _print_sweep_summary(result)
 
 

@@ -141,6 +141,159 @@ def test_fetch_api_returns_json():
     assert data["events"][0]["name"] == "MIT Energy Night"
 
 
+# ----- extract_articles (general-purpose HTML article extraction) ---------
+
+
+ARTICLE_TAG_HTML = """
+<html><body>
+  <header><nav><a href="/">Home</a></nav></header>
+  <main>
+    <article>
+      <h2><a href="/news/solid-state-1000">Solid-state battery hits 1000 cycles</a></h2>
+      <p>Researchers demonstrate a durable cell stable across a thousand cycles.</p>
+      <p>Funding from DOE supported the work at MIT.</p>
+    </article>
+    <article>
+      <h2><a href="/news/flow-battery">Flow battery cuts grid storage cost 40%</a></h2>
+      <p>A vanadium-free flow chemistry lowers levelized cost of storage.</p>
+    </article>
+  </main>
+  <footer>copyright</footer>
+</body></html>
+"""
+
+CLASSY_NEWS_HTML = """
+<html><body>
+  <div class="news-list">
+    <div class="post-item">
+      <h3><a href="https://example.com/posts/1">GaN inverter reaches 99% efficiency</a></h3>
+      <p>Wide-bandgap device cuts switching losses to record lows in lab tests.</p>
+    </div>
+    <div class="post-item">
+      <h3><a href="/posts/2">Photonic chip carries 1 Tb/s of data</a></h3>
+      <p>Silicon photonics integration enables a single-die terabit interconnect.</p>
+    </div>
+  </div>
+</body></html>
+"""
+
+LIST_STYLE_HTML = """
+<html><body>
+  <main>
+    <ul>
+      <li><a href="/p1">Advanced packaging breakthrough at TSMC</a> — 3D stacking yield improves dramatically over prior nodes.</li>
+      <li><a href="/p2">New chiplet interconnect standard published by UCIe</a> — open spec covers PCIe6 lanes.</li>
+      <li><a href="/p3">Compound semi yield record reported</a> — gallium-nitride growth on silicon at scale.</li>
+    </ul>
+  </main>
+</body></html>
+"""
+
+JS_ONLY_HTML = """
+<html><body>
+  <div id="root"></div>
+  <script>renderApp()</script>
+</body></html>
+"""
+
+
+def test_extract_articles_from_article_tags():
+    items = Scraper().extract_articles(ARTICLE_TAG_HTML, base_url="https://example.com")
+    assert len(items) == 2
+    first = items[0]
+    assert first["title"] == "Solid-state battery hits 1000 cycles"
+    assert first["link"] == "https://example.com/news/solid-state-1000"
+    assert "durable cell" in first["summary"]
+    assert first["published"] is None
+
+
+def test_extract_articles_finds_class_named_containers():
+    items = Scraper().extract_articles(CLASSY_NEWS_HTML, base_url="https://example.com")
+    titles = [i["title"] for i in items]
+    assert "GaN inverter reaches 99% efficiency" in titles
+    assert "Photonic chip carries 1 Tb/s of data" in titles
+    # Relative URL was resolved.
+    photonic = next(i for i in items if "Photonic" in i["title"])
+    assert photonic["link"] == "https://example.com/posts/2"
+
+
+def test_extract_articles_falls_back_to_list_items():
+    items = Scraper().extract_articles(LIST_STYLE_HTML, base_url="https://example.com")
+    titles = [i["title"] for i in items]
+    assert "Advanced packaging breakthrough at TSMC" in titles
+    assert len(items) == 3
+    assert all(i["link"].startswith("https://example.com/") for i in items)
+
+
+def test_extract_articles_dedupes_by_link():
+    html = """
+    <html><body>
+      <article>
+        <h2><a href="/a">First mention of breakthrough device</a></h2>
+        <p>Lead paragraph describes the device.</p>
+      </article>
+      <div class="post">
+        <h3><a href="/a">First mention of breakthrough device</a></h3>
+        <p>Second appearance of the same link.</p>
+      </div>
+    </body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 1
+
+
+def test_extract_articles_returns_empty_on_unextractable_page():
+    assert Scraper().extract_articles(JS_ONLY_HTML, base_url="https://example.com") == []
+    assert Scraper().extract_articles("", base_url="https://example.com") == []
+
+
+def test_extract_articles_skips_junk_anchors():
+    """Anchors like ``#section`` or ``javascript:void(0)`` are not real links."""
+    html = """
+    <html><body><article>
+      <h2><a href="#top">Solid-state battery research roundup</a></h2>
+      <p>Some text.</p>
+      <a href="javascript:void(0)">share</a>
+    </article></body></html>
+    """
+    assert Scraper().extract_articles(html, base_url="https://example.com") == []
+
+
+# ----- _fetch_source(scrape) integration via MockTransport ----------------
+
+
+def test_scrape_method_via_mock_transport():
+    """End-to-end through the agent's fetch path: scrape source -> items."""
+    from systems.base_agent import BaseAgent
+
+    def handler(request):
+        if request.url.path == "/robots.txt":
+            return httpx.Response(404)
+        return httpx.Response(200, text=ARTICLE_TAG_HTML)
+
+    # A throwaway BaseAgent subclass we can construct (run + _build_record + _save unused).
+    class _Probe(BaseAgent):
+        async def run(self): ...
+        def _build_record(self, item, data): ...
+        async def _save(self, record): ...
+
+    async def body():
+        scraper = _mock_scraper(handler)
+        probe = _Probe.__new__(_Probe)
+        probe.scraper = scraper
+        probe.log = __import__("logging").getLogger("test")
+        items = await probe._fetch_source(
+            {"name": "MIT news", "url": "https://example.com/news", "method": "web_scrape"}
+        )
+        await scraper.close()
+        return items
+
+    items = asyncio.run(body())
+    assert len(items) == 2
+    assert all(i["source_name"] == "MIT news" for i in items)
+    assert items[0]["title"] == "Solid-state battery hits 1000 cycles"
+
+
 def test_fetch_rss_failure_returns_empty_list():
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(500)

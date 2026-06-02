@@ -128,8 +128,14 @@ class BaseAgent(ABC):
             # Prefer an explicit feed URL (rss_url) over a page URL (url).
             feed_url = source.get("rss_url") or source.get("url")
             items = await self.scraper.fetch_rss(feed_url)
+        elif method == "scrape":
+            page_url = source.get("url") or source.get("rss_url")
+            html = await self.scraper.fetch_page(page_url)
+            if not html:
+                return []
+            items = self.scraper.extract_articles(html, base_url=page_url)
         else:
-            # web scraping (Day 5) and API sources are not handled yet.
+            # api method — not built yet.
             self.log.debug("Skipping %s source: %s", method, name)
             return []
         for item in items:

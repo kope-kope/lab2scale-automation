@@ -13,7 +13,7 @@ import asyncio
 import logging
 import urllib.robotparser
 from collections import defaultdict
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import feedparser
 import httpx
@@ -264,3 +264,119 @@ class Scraper:
         if attr:
             return target.get(attr)
         return target.get_text(strip=True)
+
+    # --- general-purpose article extraction (web_scrape sources) -----------
+
+    # Tags whose contents are never article items.
+    _NOISE_TAGS = (
+        "script", "style", "nav", "header", "footer", "aside",
+        "form", "noscript", "iframe", "svg",
+    )
+    # Container selectors, tried in priority order. Anything matching `*=foo i`
+    # is a case-insensitive substring match on the class/id.
+    _ARTICLE_SELECTORS = (
+        "article",
+        "[class*='article' i]",
+        "[class*='post' i]",
+        "[class*='news' i]",
+        "[class*='entry' i]",
+        "[class*='story' i]",
+        "[class*='card' i]",
+        "[class*='listing' i]",
+    )
+    _MIN_CANDIDATES = 3
+    _MIN_TITLE_CHARS = 12
+    _SNIPPET_MAX_CHARS = 500
+
+    def extract_articles(self, html: str, base_url: str = "") -> list[dict]:
+        """Extract article-like items from arbitrary HTML.
+
+        Returns a list of ``{title, link, summary, published}`` dicts — the same
+        shape as ``fetch_rss`` output, so the downstream agent pipeline doesn't
+        care whether an item came from RSS or a scraped page.
+
+        Heuristics: strip nav/script/style noise, look for article-shaped
+        containers (``<article>``, classes containing "post"/"news"/"entry"/…),
+        and fall back to ``<li>`` items in the main content area when too few
+        containers are found. Returns ``[]`` if nothing extractable.
+        """
+        if not html:
+            return []
+        soup = BeautifulSoup(html, "lxml")
+        for tag in soup(self._NOISE_TAGS):
+            tag.decompose()
+
+        candidates: list = []
+        seen_ids: set[int] = set()
+        for selector in self._ARTICLE_SELECTORS:
+            try:
+                matches = soup.select(selector)
+            except Exception:  # noqa: BLE001 — bad selector should never abort
+                continue
+            for el in matches:
+                if id(el) not in seen_ids:
+                    seen_ids.add(id(el))
+                    candidates.append(el)
+
+        # Fallback: list items in main content (lab "publications" / news lists).
+        if len(candidates) < self._MIN_CANDIDATES:
+            for el in soup.select("main li, article li, [role='main'] li"):
+                if id(el) not in seen_ids:
+                    seen_ids.add(id(el))
+                    candidates.append(el)
+
+        items: list[dict] = []
+        seen_links: set[str] = set()
+        for container in candidates:
+            row = self._build_article_item(container, base_url)
+            if row is None:
+                continue
+            if row["link"] in seen_links:
+                continue
+            seen_links.add(row["link"])
+            items.append(row)
+        return items
+
+    def _build_article_item(self, container, base_url: str) -> dict | None:
+        # Title — prefer a heading, fall back to a substantial anchor.
+        title = None
+        heading = container.find(["h1", "h2", "h3", "h4"])
+        if heading is not None:
+            title = heading.get_text(strip=True)
+        if not title:
+            for a in container.find_all("a", limit=5):
+                text = a.get_text(strip=True)
+                if len(text) >= self._MIN_TITLE_CHARS:
+                    title = text
+                    break
+        if not title or len(title) < self._MIN_TITLE_CHARS:
+            return None
+
+        # Link — first usable anchor, resolved to absolute.
+        link = None
+        for a in container.find_all("a"):
+            href = (a.get("href") or "").strip()
+            if not href or href.startswith(("#", "javascript:", "mailto:")):
+                continue
+            link = urljoin(base_url, href)
+            break
+        if not link:
+            return None
+
+        # Snippet — concatenate paragraph text, excluding the title.
+        text_parts: list[str] = []
+        running = 0
+        for p in container.find_all("p", limit=6):
+            text = p.get_text(strip=True)
+            if not text or text == title or len(text) < 20:
+                continue
+            text_parts.append(text)
+            running += len(text)
+            if running >= self._SNIPPET_MAX_CHARS:
+                break
+        snippet = " ".join(text_parts) if text_parts else container.get_text(
+            separator=" ", strip=True
+        ).replace(title, "", 1)
+        snippet = " ".join(snippet.split())[: self._SNIPPET_MAX_CHARS] or None
+
+        return {"title": title, "link": link, "summary": snippet, "published": None}

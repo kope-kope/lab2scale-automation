@@ -31,6 +31,33 @@ def _db_path() -> str:
     return db_path_from_url(url)
 
 
+def _check_env(command: str, dry_run: bool = False) -> None:
+    """Warn about missing keys with copy specific to the command being run.
+
+    Never exits — the LLM and email layers fail soft on their own. This is
+    just so the user gets a single clear heads-up instead of cryptic
+    downstream failures.
+    """
+    needs: list[str] = []
+    if command in ("sweep", "report", "full"):
+        if not os.getenv("ANTHROPIC_API_KEY"):
+            needs.append(
+                "ANTHROPIC_API_KEY — required for LLM scoring/extraction/summary"
+            )
+    if command in ("report", "full") and not dry_run:
+        if not os.getenv("RESEND_API_KEY"):
+            needs.append(
+                "RESEND_API_KEY — required to send the brief (use --dry-run "
+                "to preview without sending)"
+            )
+    if needs:
+        log.warning(
+            "Missing required env for `%s`:\n  - %s\nSet these in .env. The "
+            "command will still run but produce no useful output.",
+            command, "\n  - ".join(needs),
+        )
+
+
 async def init_db() -> None:
     path = _db_path()
     log.info("Initializing database at %s", path)
@@ -83,11 +110,6 @@ def _sweep_methods() -> set[str]:
 
 async def sweep() -> None:
     """Run System 1 (research) and System 2 (events) concurrently and persist."""
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        log.warning(
-            "ANTHROPIC_API_KEY is not set — LLM scoring will fail and no findings "
-            "or events will be saved. Set it in .env to get real results."
-        )
     methods = _sweep_methods()
     log.info("Sweep methods: %s", ", ".join(sorted(methods)))
 
@@ -129,18 +151,13 @@ async def sweep() -> None:
 
 async def report(dry_run: bool = False) -> None:
     """Run System 3 — compile and deliver the weekly intelligence brief."""
-    if not dry_run and not os.getenv("RESEND_API_KEY"):
-        log.warning(
-            "RESEND_API_KEY is not set — the email send will fail and the "
-            "report HTML will be saved to data/latest_report.html instead. "
-            "Use `report --dry-run` if you only want a preview."
-        )
     from systems.system3_delivery.orchestrator import DeliveryOrchestrator
     result = await DeliveryOrchestrator().run(dry_run=dry_run)
-    print(f"\nDelivery result: {result}\n")
+    log.info("Delivery result: %s", result)
 
 
 async def run(command: str, dry_run: bool = False) -> None:
+    _check_env(command, dry_run=dry_run)
     if command == "init-db":
         await init_db()
     elif command == "sweep":

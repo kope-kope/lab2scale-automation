@@ -1,0 +1,26 @@
+# Don't ship local artifacts into the image
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Don't ship secrets or local DB state — those come from the runtime env + volume
+.env
+data/*.db
+data/*.sqlite*
+data/*.html
+
+# Don't ship git state
+.git/
+.gitignore
+.gitattributes
+
+# Don't ship local-only scratch scripts (they're in scripts/try_*.py)
+scripts/try_*.py
+
+# OS noise
+.DS_Store
+Thumbs.db

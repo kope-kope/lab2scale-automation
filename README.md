@@ -162,12 +162,84 @@ Automation/
 
 ---
 
-## Deployment
+## Deployment — Railway
 
-See **`context.md` § Test vs Live configurations** for the recommended
-env-var values per environment. Container build (Day 9) wraps this whole
-thing into a single image runnable on Railway or Google Cloud Run with two
-cron triggers.
+Auto-deploy on push to main is the goal: connect this repo to Railway once,
+and every merge to `main` triggers a rebuild and redeploy.
+
+### One-time setup (5 minutes)
+
+1. **Create a Railway project** at https://railway.app → New Project → Deploy from GitHub repo → pick `lab2scale-automation`. Railway reads `Dockerfile` + `railway.toml` and builds.
+
+2. **Add a persistent volume** (so the SQLite DB and `seen_hashes` survive between cron runs):
+   - In the service settings → Volumes → New Volume
+   - Mount path: `/app/data`
+   - Size: 1 GB is plenty
+
+3. **Set environment variables** in the service's Variables tab (paste these in; see `context.md` for the full reference):
+   ```
+   ANTHROPIC_API_KEY=sk-ant-...
+   RESEND_API_KEY=re_...
+   REPORT_RECIPIENT=team@lab-2-scale.com
+   REPORT_FROM=reports@lab-2-scale.com
+   SWEEP_METHODS=rss
+   LOG_LEVEL=INFO
+   ```
+
+4. **Verify the cron schedule.** `railway.toml` declares one weekly cron — Monday 14:00 UTC (9am ET) running `python main.py full`. That's both the sweep and the report in one shot. If you want to adjust, the schedule lives in `railway.toml` → `[deploy] cronSchedule`.
+
+5. **Confirm auto-deploy.** In the service settings → Source, make sure the branch is set to `main`. Railway shows recent deploys in the dashboard — push something small to `main` and watch a rebuild kick off.
+
+### Verifying the first run
+
+- The first Monday after setup, Railway will trigger the cron at 14:00 UTC.
+- Logs live in the Railway dashboard under the service's Deployments tab.
+- The email lands in `REPORT_RECIPIENT`'s inbox.
+- The SQLite DB persists on the volume; subsequent runs reuse it.
+
+### Upgrading to 3×-daily sweeps + separate weekly report (production cadence)
+
+`railway.toml`'s default is **one weekly cron** running `full` — the
+simplest setup that works with SQLite + a single volume. The spec's
+intended production cadence is *three sweeps a day plus one Monday
+report*, which needs a shared database that two cron services can both
+write to. Path:
+
+1. Add the Railway **Postgres** plugin (free tier covers this).
+2. Add `asyncpg` to `requirements.txt` and switch `DataStore` to dispatch
+   on `DATABASE_URL` scheme. **Not yet implemented** — tracked as Day 10
+   work.
+3. Replace the single service with two:
+   - **sweep** service — command `python main.py sweep`, cron `0 11,18,1 * * *`
+   - **report** service — command `python main.py report`, cron `0 14 * * 1`
+4. Both services read `DATABASE_URL` (Railway injects this automatically
+   when the Postgres plugin is attached).
+
+The same `Dockerfile` and `railway.toml` patterns work for both services —
+each service just overrides `startCommand` and `cronSchedule` in the
+dashboard.
+
+### Cron timezone reference
+
+```
+Sweep (3×/day):    0 11,18,1 * * *   UTC   = 6am, 1pm, 8pm ET
+Report (weekly):   0 14 * * 1         UTC   = 9am ET Monday
+Full (weekly):     0 14 * * 1         UTC   = 9am ET Monday  ← current default
+```
+
+### Local testing of the image
+
+```bash
+docker build -t lab2scale-automation .
+docker run --rm --env-file .env -v "$(pwd)/data:/app/data" \
+  lab2scale-automation python main.py full --dry-run
+```
+
+### Helper scripts
+
+`scripts/setup.sh` — one-shot local setup (venv, install, init-db).
+`scripts/run_sweep.sh` — wrapper for local cron / systemd / manual.
+`scripts/run_report.sh` — same, passes args through (e.g. `--dry-run`).
 
 ---
 

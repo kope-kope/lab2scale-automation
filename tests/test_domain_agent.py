@@ -106,7 +106,7 @@ def test_domain_agent_end_to_end(tmp_path):
         scraper = FakeScraper(FEEDS)
         agent = DomainAgent(
             _write_config(tmp_path), scraper, FakeLLM(SCORES),
-            Deduplicator(store), store, methods={"rss"}, threshold=6.0,
+            Deduplicator(store), store, methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         stats = await agent.run()
         findings = await store.get_unreported_findings()
@@ -150,14 +150,14 @@ def test_domain_agent_dedups_on_rerun(tmp_path):
         config = _write_config(tmp_path)
 
         agent1 = DomainAgent(config, FakeScraper(FEEDS), FakeLLM(SCORES),
-                             dedup, store, methods={"rss"}, threshold=6.0)
+                             dedup, store, methods={"rss"}, threshold=6.0, week_window_days=None)
         first = await agent1.run()
 
         # Second sweep: same items are all already seen.
         scraper2 = FakeScraper(FEEDS)
         llm2 = FakeLLM(SCORES)
         agent2 = DomainAgent(config, scraper2, llm2, dedup, store,
-                             methods={"rss"}, threshold=6.0)
+                             methods={"rss"}, threshold=6.0, week_window_days=None)
         second = await agent2.run()
 
         findings = await store.get_unreported_findings()
@@ -189,7 +189,7 @@ def test_kept_item_not_marked_seen_when_extraction_fails(tmp_path):
         dedup = Deduplicator(store)
         agent = DomainAgent(
             _write_config(tmp_path), FakeScraper(FEEDS), FailingExtractLLM(),
-            dedup, store, methods={"rss"}, threshold=6.0,
+            dedup, store, methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         stats = await agent.run()
         # The solid-state item passed scoring but extraction failed — it must
@@ -227,7 +227,7 @@ def test_source_with_only_rss_url_is_fetched(tmp_path):
     async def body():
         store = await _fresh_store()
         agent = DomainAgent(str(cfg), FakeScraper(feeds), FakeLLM(SCORES),
-                            Deduplicator(store), store, methods={"rss"}, threshold=6.0)
+                            Deduplicator(store), store, methods={"rss"}, threshold=6.0, week_window_days=None)
         stats = await agent.run()
         findings = await store.get_unreported_findings()
         await store.close()
@@ -260,7 +260,7 @@ def test_failing_source_does_not_crash_sweep(tmp_path):
         store = await _fresh_store()
         scraper = FakeScraper(feeds, raise_on={"https://example.com/boom.rss"})
         agent = DomainAgent(str(cfg), scraper, FakeLLM(SCORES),
-                            Deduplicator(store), store, methods={"rss"}, threshold=6.0)
+                            Deduplicator(store), store, methods={"rss"}, threshold=6.0, week_window_days=None)
         stats = await agent.run()
         findings = await store.get_unreported_findings()
         await store.close()

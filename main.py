@@ -40,22 +40,33 @@ async def init_db() -> None:
 
 
 def _print_sweep_summary(result: dict) -> None:
-    """Print a per-domain summary table for a System 1 sweep."""
-    domains = result.get("domains", {})
+    """Print a per-domain or per-city summary table for a sweep result."""
+    system = result.get("system", "research")
+    if system == "events":
+        title = "System 2 — Events sweep"
+        row_label = "city"
+        rows = result.get("cities", {})
+    else:
+        title = "System 1 — Research sweep"
+        row_label = "domain"
+        rows = result.get("domains", {})
     totals = result.get("totals", {})
-    print("\nSystem 1 — Research sweep")
-    header = f"{'domain':<20}{'sources':>9}{'fetched':>9}{'filtered':>9}{'saved':>7}{'errors':>8}"
+    print(f"\n{title}")
+    header = (f"{row_label:<20}{'sources':>9}{'fetched':>9}{'dropped':>9}"
+              f"{'filtered':>9}{'saved':>7}{'errors':>8}")
     print(header)
     print("-" * len(header))
-    for domain, s in domains.items():
+    for name, s in rows.items():
         if "error" in s:
-            print(f"{domain:<20}  CRASHED: {s['error']}")
+            print(f"{name:<20}  CRASHED: {s['error']}")
             continue
-        print(f"{domain:<20}{s.get('sources', 0):>9}{s.get('fetched', 0):>9}"
-              f"{s.get('filtered', 0):>9}{s.get('new_items', 0):>7}{s.get('errors', 0):>8}")
+        print(f"{name:<20}{s.get('sources', 0):>9}{s.get('fetched', 0):>9}"
+              f"{s.get('dropped_old', 0):>9}{s.get('filtered', 0):>9}"
+              f"{s.get('new_items', 0):>7}{s.get('errors', 0):>8}")
     print("-" * len(header))
     print(f"{'TOTAL':<20}{totals.get('sources', 0):>9}{totals.get('fetched', 0):>9}"
-          f"{totals.get('filtered', 0):>9}{totals.get('new_items', 0):>7}{totals.get('errors', 0):>8}\n")
+          f"{totals.get('dropped_old', 0):>9}{totals.get('filtered', 0):>9}"
+          f"{totals.get('new_items', 0):>7}{totals.get('errors', 0):>8}\n")
 
 
 def _sweep_methods() -> set[str]:
@@ -71,19 +82,49 @@ def _sweep_methods() -> set[str]:
 
 
 async def sweep() -> None:
-    """Run System 1 (research monitoring) and persist findings."""
+    """Run System 1 (research) and System 2 (events) concurrently and persist."""
     if not os.getenv("ANTHROPIC_API_KEY"):
         log.warning(
             "ANTHROPIC_API_KEY is not set — LLM scoring will fail and no findings "
-            "will be saved. Set it in .env to get real results."
+            "or events will be saved. Set it in .env to get real results."
         )
     methods = _sweep_methods()
     log.info("Sweep methods: %s", ", ".join(sorted(methods)))
-    # Imported here so `init-db` works even before System 2/3 modules exist.
-    from systems.system1_research.orchestrator import ResearchOrchestrator
 
-    result = await ResearchOrchestrator(methods=methods).run()
-    _print_sweep_summary(result)
+    # Imports deferred so `init-db` doesn't pull in the system modules.
+    from systems.system1_research.orchestrator import ResearchOrchestrator
+    from systems.system2_events.orchestrator import EventsOrchestrator
+
+    # Share a single DataStore + Scraper + LLM across both systems so they
+    # share dedup state and avoid two open SQLite connections to the same file.
+    store = DataStore(_db_path())
+    await store.connect()
+    await store.init_db()
+    from lib.dedup import Deduplicator
+    from lib.llm import LLMFilter
+    from lib.scraper import Scraper
+
+    scraper = Scraper()
+    llm = LLMFilter()
+    dedup = Deduplicator(store)
+
+    research = ResearchOrchestrator(
+        scraper=scraper, llm=llm, dedup=dedup, store=store, methods=methods,
+    )
+    events = EventsOrchestrator(
+        scraper=scraper, llm=llm, dedup=dedup, store=store, methods=methods,
+    )
+
+    try:
+        research_result, events_result = await asyncio.gather(
+            research.run(), events.run()
+        )
+    finally:
+        await scraper.close()
+        await store.close()
+
+    _print_sweep_summary(research_result)
+    _print_sweep_summary(events_result)
 
 
 async def run(command: str) -> None:

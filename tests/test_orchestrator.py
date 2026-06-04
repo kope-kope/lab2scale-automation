@@ -76,7 +76,7 @@ def test_orchestrator_runs_all_domains_and_aggregates(tmp_path):
             scraper=FakeScraper(feeds), llm=FakeLLM(scores),
             dedup=Deduplicator(store), store=store,
             domains=["energy_storage", "semiconductors"],
-            config_dir=tmp_path, methods={"rss"}, threshold=6.0,
+            config_dir=tmp_path, methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         result = await orch.run()
         findings = await store.get_unreported_findings()
@@ -112,7 +112,7 @@ def test_orchestrator_isolates_a_failing_domain(tmp_path):
             scraper=FakeScraper(feeds), llm=FakeLLM({"Solid-state battery": 9.0}),
             dedup=Deduplicator(store), store=store,
             domains=["energy_storage", "missing_domain"],
-            config_dir=tmp_path, methods={"rss"}, threshold=6.0,
+            config_dir=tmp_path, methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         result = await orch.run()
         findings = await store.get_unreported_findings()

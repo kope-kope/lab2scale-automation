@@ -101,6 +101,75 @@ SUMMARY_SYSTEM_PROMPT = (
     "the team."
 )
 
+# --- Event-specific prompts (System 2) --------------------------------------
+
+EVENT_SCORING_PROMPT = """You are an event analyst for Lab2Scale, a deep tech commercialization firm.
+Score the following event for relevance to our focus areas on a scale of 0-10.
+
+Lab2Scale's focus areas:
+- power_generation (fusion, fission, solar, thermoelectrics)
+- energy_storage (batteries, hydrogen, thermal storage)
+- power_electronics (GaN/SiC devices, inverters, converters)
+- semiconductors (advanced packaging, photonics, compound semis)
+- deep_tech_infra (advanced manufacturing, materials science, compute infra)
+
+Scoring criteria (consider both topic relevance AND networking value):
+- 9-10: Major conference or summit on one of our focus areas, high networking value
+- 7-8: Significant workshop, seminar, or meetup directly in our space
+- 5-6: Tangentially relevant — touches our space but not the main focus
+- 3-4: Adjacent topics (general tech, generic VC events)
+- 0-2: Not relevant to deep tech commercialization
+
+Content: {content}
+
+Return ONLY a JSON object: {{"score": <float>, "reason": "<one sentence>"}}"""
+
+EVENT_EXTRACTION_PROMPT = """Extract structured data from this event listing. Return a JSON object with these fields:
+- event_name: concise event name
+- event_date: date in ISO format YYYY-MM-DD if known
+- event_time: time range, e.g. "18:00-20:00"
+- venue: location or platform (e.g. "MIT Media Lab" or "Zoom")
+- description: 2-3 sentence summary of what the event is about
+- cost: e.g. "Free", "$50", "TBD"
+- event_type: one of [conference, seminar, meetup, workshop, demo_day, panel, summit]
+- relevance_tags: array of Lab2Scale focus areas this event touches, from
+  [power_generation, energy_storage, power_electronics, semiconductors, deep_tech_infra]
+
+If a field is not found in the content, use null.
+
+Content: {content}"""
+
+EVENT_EXTRACTION_TOOL = {
+    "name": "record_event",
+    "description": "Record the structured fields extracted from an event listing.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "event_name": {"type": "string", "description": "Concise event name"},
+            "event_date": {"type": "string", "description": "ISO 8601 date (YYYY-MM-DD) if known"},
+            "event_time": {"type": "string", "description": "e.g. 18:00-20:00"},
+            "venue": {"type": "string", "description": "Location or platform"},
+            "description": {"type": "string", "description": "2-3 sentence summary"},
+            "cost": {"type": "string", "description": "Free / $50 / TBD"},
+            "event_type": {
+                "type": "string",
+                "enum": ["conference", "seminar", "meetup", "workshop", "demo_day", "panel", "summit"],
+            },
+            "relevance_tags": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Lab2Scale focus areas this event touches",
+            },
+        },
+        "required": ["event_name"],
+    },
+}
+
+_EVENT_EXTRACTION_FIELDS = (
+    "event_name", "event_date", "event_time", "venue",
+    "description", "cost", "event_type", "relevance_tags",
+)
+
 
 def _extract_json(text: str) -> dict:
     """Parse a JSON object from model text, tolerating surrounding prose."""
@@ -237,6 +306,71 @@ class LLMFilter:
             researchers = [researchers]
         result["researchers"] = [
             r for r in researchers if isinstance(r, str) and not _is_nullish(r)
+        ]
+        return result
+
+    # ----- event-specific scoring + extraction (System 2) -----------------
+
+    async def score_event_relevance(self, content: str) -> float:
+        """Score an event 0-10 for relevance to Lab2Scale focus areas (Haiku).
+
+        On API failure, logs and returns 0.0 (the item is then filtered out).
+        """
+        prompt = EVENT_SCORING_PROMPT.format(content=(content or "")[:_MAX_CONTENT_CHARS])
+        try:
+            response = await self.client.messages.create(
+                model=self.scoring_model,
+                max_tokens=256,
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("score_event_relevance failed: %s — defaulting to 0.0", exc)
+            return 0.0
+        self._track_usage(response, self.scoring_model)
+        data = _extract_json(_first_text(response))
+        try:
+            return float(data.get("score", 0.0))
+        except (TypeError, ValueError):
+            return 0.0
+
+    async def extract_event_data(self, content: str) -> dict:
+        """Extract structured event data (Haiku, tool_use).
+
+        Returns a dict with all event fields present (missing → None / []).
+        On API failure, returns an empty-but-shaped dict.
+        """
+        prompt = EVENT_EXTRACTION_PROMPT.format(content=(content or "")[:_MAX_CONTENT_CHARS])
+        try:
+            response = await self.client.messages.create(
+                model=self.scoring_model,
+                max_tokens=1024,
+                tools=[EVENT_EXTRACTION_TOOL],
+                tool_choice={"type": "tool", "name": EVENT_EXTRACTION_TOOL["name"]},
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("extract_event_data failed: %s — returning empty", exc)
+            return self._normalize_event_extraction({})
+        self._track_usage(response, self.scoring_model)
+
+        for block in getattr(response, "content", []) or []:
+            if getattr(block, "type", None) == "tool_use":
+                return self._normalize_event_extraction(dict(getattr(block, "input", {}) or {}))
+        return self._normalize_event_extraction(_extract_json(_first_text(response)))
+
+    @staticmethod
+    def _normalize_event_extraction(data: dict) -> dict:
+        result = {field: data.get(field) for field in _EVENT_EXTRACTION_FIELDS}
+        for field in _EVENT_EXTRACTION_FIELDS:
+            if _is_nullish(result[field]):
+                result[field] = None
+        tags = result["relevance_tags"]
+        if tags is None:
+            tags = []
+        elif isinstance(tags, str):
+            tags = [tags]
+        result["relevance_tags"] = [
+            t for t in tags if isinstance(t, str) and not _is_nullish(t)
         ]
         return result
 

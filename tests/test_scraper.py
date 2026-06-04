@@ -259,6 +259,81 @@ def test_extract_articles_skips_junk_anchors():
     assert Scraper().extract_articles(html, base_url="https://example.com") == []
 
 
+# ----- richer date detection in extract_articles --------------------------
+
+
+def test_extract_articles_picks_up_class_named_date():
+    html = """
+    <html><body><article>
+      <h2><a href="/a">Solid-state battery hits 1000 cycles</a></h2>
+      <span class="post-date">May 25, 2026</span>
+      <p>Lead paragraph describes the result.</p>
+    </article></body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 1
+    assert items[0]["published"] == "May 25, 2026"
+
+
+def test_extract_articles_picks_up_url_date():
+    html = """
+    <html><body><article>
+      <h2><a href="/news/2026/05/25/flow-battery">Flow battery cuts grid cost</a></h2>
+      <p>A new chemistry lowers levelized storage cost.</p>
+    </article></body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 1
+    assert items[0]["published"] == "2026-05-25"
+
+
+def test_extract_articles_uses_og_meta_for_single_article_page():
+    html = """
+    <html><head>
+      <meta property="article:published_time" content="2026-05-28T09:00:00Z">
+    </head><body><article>
+      <h2><a href="/post/breakthrough">Cathode breakthrough at Stanford</a></h2>
+      <p>Researchers demonstrate a new layered cathode.</p>
+    </article></body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 1
+    assert items[0]["published"] == "2026-05-28T09:00:00Z"
+
+
+def test_extract_articles_uses_jsonld_date():
+    html = """
+    <html><body><article>
+      <h2><a href="/post/x">Photonic chip carries 1 Tb/s of data</a></h2>
+      <p>Silicon photonics integration enables terabit interconnect.</p>
+      <script type="application/ld+json">
+      {"@type": "NewsArticle", "datePublished": "2026-06-01"}
+      </script>
+    </article></body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 1
+    assert items[0]["published"] == "2026-06-01"
+
+
+def test_page_date_not_used_when_multiple_candidates():
+    """OG meta on a listing page would smear the same date across all items —
+    we deliberately ignore it when there's more than one container."""
+    html = """
+    <html><head>
+      <meta property="article:published_time" content="2026-05-28">
+    </head><body><main>
+      <article><h2><a href="/a">Article one with substantial title</a></h2>
+        <p>Body of article one.</p></article>
+      <article><h2><a href="/b">Article two with substantial title</a></h2>
+        <p>Body of article two.</p></article>
+    </main></body></html>
+    """
+    items = Scraper().extract_articles(html, base_url="https://example.com")
+    assert len(items) == 2
+    assert all(i["published"] is None for i in items)
+
+
 # ----- _fetch_source(scrape) integration via MockTransport ----------------
 
 

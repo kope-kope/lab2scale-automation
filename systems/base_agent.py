@@ -15,6 +15,8 @@ from __future__ import annotations
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import yaml
@@ -29,6 +31,49 @@ def load_yaml(path: str) -> dict:
     """Load a YAML config file into a dict (empty dict if the file is blank)."""
     with open(path, "r", encoding="utf-8") as fh:
         return yaml.safe_load(fh) or {}
+
+
+def _parse_date_string(raw: str) -> datetime | None:
+    """Parse a date string from a feed or web page into a tz-aware UTC datetime.
+
+    Tries RFC 822 (the common RSS form, e.g. ``Mon, 25 May 2026 09:00:00 GMT``)
+    and then ISO 8601 (``2026-05-25``, ``2026-05-25T09:00:00Z``). Returns None
+    if neither parses — the agent will then drop the item.
+    """
+    if not raw:
+        return None
+    s = raw.strip()
+    try:
+        dt = parsedate_to_datetime(s)
+        if dt is not None:
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        pass
+    candidate = s.replace("Z", "+00:00")
+    try:
+        dt = datetime.fromisoformat(candidate)
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except ValueError:
+        pass
+    # Try a handful of common textual formats from scraped HTML.
+    for fmt in (
+        "%B %d, %Y",   # May 25, 2026
+        "%b %d, %Y",   # May 25, 2026 (or "Jan 5, 2026")
+        "%d %B %Y",    # 25 May 2026
+        "%d %b %Y",    # 25 May 2026 / 25 Jan 2026
+        "%B %d %Y",    # May 25 2026 (no comma)
+        "%Y/%m/%d",    # 2026/05/25
+    ):
+        try:
+            return datetime.strptime(s, fmt).replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+    # Last attempt — date-only, e.g. "2026-05-25".
+    try:
+        dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        return dt.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
 
 def normalize_method(method: str | None) -> str:
@@ -50,6 +95,8 @@ class BaseAgent(ABC):
         methods: set[str] | None = None,
         threshold: float | None = None,
         max_items: int | None = None,
+        week_window_days: int | None = 7,
+        _now: datetime | None = None,
     ):
         self.config_path = config_path
         self.config = load_yaml(config_path)
@@ -64,6 +111,11 @@ class BaseAgent(ABC):
         # Optional cap on how many fetched items proceed to scoring (cost/time
         # guard for demos and dry runs). None means no cap.
         self.max_items = max_items
+        # Drop items outside this rolling window (days back from now). Items
+        # whose date can't be parsed are also dropped. None disables the filter.
+        self.week_window_days = week_window_days
+        # Injectable "now" for tests; production uses datetime.now(utc).
+        self._now = _now
         # Subclasses set these.
         self.name = "base_agent"
         self.focus_area = ""
@@ -74,6 +126,7 @@ class BaseAgent(ABC):
         self._skipped = 0   # duplicates (already seen in a prior sweep) + table dups
         self._filtered = 0  # scored below threshold
         self._errors = 0
+        self._dropped_old = 0  # outside the week window or undated
         # Hashes scored in THIS run. Lets us skip items that appear in
         # overlapping feeds without persisting "seen" before the finding is
         # saved — so an interrupted run never silently drops kept items.
@@ -104,9 +157,10 @@ class BaseAgent(ABC):
     # ----- pipeline --------------------------------------------------------
 
     async def fetch_all_sources(self) -> list[dict]:
-        """Fetch from all (filtered) sources concurrently. Returns raw items,
-        each annotated with its ``source_name``. Source failures are logged and
-        skipped — they never abort the sweep."""
+        """Fetch from all (filtered) sources concurrently, then drop items
+        outside the current-week window. Items without a parseable date are
+        dropped too — the system runs weekly, so undated content can't be
+        bucketed correctly. Returns survivors annotated with ``source_name``."""
         sources = self.iter_sources()
         results = await asyncio.gather(
             *(self._fetch_source(s) for s in sources), return_exceptions=True
@@ -118,8 +172,48 @@ class BaseAgent(ABC):
                 self.log.error("Failed to fetch %s: %s", source.get("name"), result)
                 continue
             raw.extend(result)
+
+        if self.week_window_days is not None:
+            cutoff = self._window_cutoff()
+            fresh: list[dict] = []
+            for item in raw:
+                dt = self._item_datetime(item)
+                if dt is None or dt < cutoff:
+                    self._dropped_old += 1
+                    continue
+                fresh.append(item)
+            self.log.info(
+                "Fetched %d raw items from %d sources; %d kept after the "
+                "%dd window, %d dropped (undated or stale)",
+                len(raw), len(sources), len(fresh),
+                self.week_window_days, self._dropped_old,
+            )
+            return fresh
+
         self.log.info("Fetched %d raw items from %d sources", len(raw), len(sources))
         return raw
+
+    def _window_cutoff(self) -> datetime:
+        now = self._now or datetime.now(timezone.utc)
+        return now - timedelta(days=self.week_window_days)
+
+    @staticmethod
+    def _item_datetime(item: dict) -> datetime | None:
+        """Return a tz-aware UTC datetime for an item, or None if undateable."""
+        parsed = item.get("published_parsed")
+        if parsed:
+            try:
+                return datetime(*parsed[:6], tzinfo=timezone.utc)
+            except (TypeError, ValueError):
+                pass
+        raw = (
+            item.get("published")
+            or item.get("updated")
+            or item.get("event_date")
+        )
+        if not raw:
+            return None
+        return _parse_date_string(raw)
 
     async def _fetch_source(self, source: dict) -> list[dict]:
         method = normalize_method(source.get("method"))
@@ -167,7 +261,7 @@ class BaseAgent(ABC):
             self._seen_this_run.add(content_hash)
 
             content = self._item_content(item)
-            score = await self.llm.score_relevance(content, self.focus_area)
+            score = await self._score_item(content)
 
             if score >= self.threshold:
                 item["_hash"] = content_hash
@@ -191,10 +285,16 @@ class BaseAgent(ABC):
         saved = 0
         for item in items:
             try:
-                data = await self.llm.extract_structured_data(item["_content"], self.focus_area)
+                data = await self._extract_item(item["_content"])
             except Exception as exc:  # noqa: BLE001
                 self._errors += 1
                 self.log.error("extraction failed for %s: %s", item.get("link"), exc)
+                continue
+            if not self._should_save(item, data):
+                # Post-extraction filter (e.g. event_date outside the upcoming
+                # window). Mark seen so we don't re-score next sweep.
+                self._dropped_old += 1
+                await self._mark_seen(item["_hash"], item.get("source_name", self.name))
                 continue
             record = self._build_record(item, data)
             if await self._save(record):
@@ -236,9 +336,25 @@ class BaseAgent(ABC):
             "errors": self._errors,
             "fetched": len(raw),
             "filtered": self._filtered,
+            "dropped_old": self._dropped_old,
         }
 
     # ----- subclass hooks --------------------------------------------------
+
+    async def _score_item(self, content: str) -> float:
+        """Score a single item. Defaults to research-style scoring against
+        ``self.focus_area``; CityAgent overrides for event scoring."""
+        return await self.llm.score_relevance(content, self.focus_area)
+
+    async def _extract_item(self, content: str) -> dict:
+        """Extract structured fields from an item. Defaults to research-style
+        extraction; CityAgent overrides for event extraction."""
+        return await self.llm.extract_structured_data(content, self.focus_area)
+
+    def _should_save(self, item: dict, data: dict) -> bool:
+        """Post-extraction veto. Default: always save. CityAgent overrides
+        to enforce ``event_date`` being in the upcoming window."""
+        return True
 
     @abstractmethod
     async def run(self) -> dict:

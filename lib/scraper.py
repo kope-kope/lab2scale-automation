@@ -10,7 +10,9 @@ robots.txt for HTML page fetches.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import re
 import urllib.robotparser
 from collections import defaultdict
 from urllib.parse import urljoin, urlparse
@@ -193,6 +195,11 @@ class Scraper:
                     "link": entry.get("link"),
                     "summary": entry.get("summary") or entry.get("description"),
                     "published": entry.get("published") or entry.get("updated"),
+                    # feedparser pre-parses dates to time.struct_time; expose so
+                    # the agent's date filter can use it without re-parsing.
+                    "published_parsed": (
+                        entry.get("published_parsed") or entry.get("updated_parsed")
+                    ),
                 }
             )
         return items
@@ -288,6 +295,28 @@ class Scraper:
     _MIN_TITLE_CHARS = 12
     _SNIPPET_MAX_CHARS = 500
 
+    # Per-container date hunting — class names that commonly hold a publish date.
+    _DATE_CLASS_SELECTOR = (
+        "[class*='date' i], [class*='published' i], "
+        "[class*='pubdate' i], [class*='post-date' i], "
+        "[class*='entry-date' i], [class*='timestamp' i]"
+    )
+    # Common URL pattern that bakes the publish date into the path,
+    # e.g. /news/2026/05/28/some-article/.
+    _URL_DATE_RE = re.compile(r"/(20\d{2})/(\d{1,2})/(\d{1,2})/")
+    # Page-level meta tags carrying a publish date (Open Graph, Dublin Core, etc).
+    _PAGE_DATE_META = (
+        ("meta", {"property": "article:published_time"}),
+        ("meta", {"name": "article:published_time"}),
+        ("meta", {"itemprop": "datePublished"}),
+        ("meta", {"name": "date"}),
+        ("meta", {"name": "dcterms.created"}),
+        ("meta", {"name": "dc.date"}),
+        ("meta", {"name": "dc.date.created"}),
+        ("meta", {"name": "pubdate"}),
+        ("meta", {"name": "publish-date"}),
+    )
+
     def extract_articles(self, html: str, base_url: str = "") -> list[dict]:
         """Extract article-like items from arbitrary HTML.
 
@@ -304,6 +333,9 @@ class Scraper:
             return []
         soup = BeautifulSoup(html, "lxml")
         for tag in soup(self._NOISE_TAGS):
+            # JSON-LD blocks frequently carry the publish date we need.
+            if tag.name == "script" and tag.get("type") == "application/ld+json":
+                continue
             tag.decompose()
 
         candidates: list = []
@@ -325,10 +357,16 @@ class Scraper:
                     seen_ids.add(id(el))
                     candidates.append(el)
 
+        # Use a page-level date as a fallback only on single-article pages —
+        # on a listing it would smear the same date across many items.
+        page_date = (
+            self._extract_page_date(soup) if len(candidates) <= 1 else None
+        )
+
         items: list[dict] = []
         seen_links: set[str] = set()
         for container in candidates:
-            row = self._build_article_item(container, base_url)
+            row = self._build_article_item(container, base_url, page_date)
             if row is None:
                 continue
             if row["link"] in seen_links:
@@ -337,7 +375,9 @@ class Scraper:
             items.append(row)
         return items
 
-    def _build_article_item(self, container, base_url: str) -> dict | None:
+    def _build_article_item(
+        self, container, base_url: str, page_date: str | None = None
+    ) -> dict | None:
         # Title — prefer a heading, fall back to a substantial anchor.
         title = None
         heading = container.find(["h1", "h2", "h3", "h4"])
@@ -379,4 +419,76 @@ class Scraper:
         ).replace(title, "", 1)
         snippet = " ".join(snippet.split())[: self._SNIPPET_MAX_CHARS] or None
 
-        return {"title": title, "link": link, "summary": snippet, "published": None}
+        # Date — try multiple sources in order: <time>, a class-named date
+        # element inside the container, JSON-LD datePublished inside the
+        # container, a date baked into the URL, and finally a page-level
+        # date (only set when this is a single-article page).
+        published = self._date_from_container(container)
+        if not published:
+            published = self._date_from_url(link)
+        if not published:
+            published = page_date
+        return {"title": title, "link": link, "summary": snippet, "published": published}
+
+    # ----- date hunting helpers -------------------------------------------
+
+    @classmethod
+    def _date_from_container(cls, container) -> str | None:
+        """Look for a publish date *inside* an article container."""
+        time_el = container.find("time")
+        if time_el is not None:
+            text = time_el.get("datetime") or time_el.get_text(strip=True)
+            if text:
+                return text
+        class_el = container.select_one(cls._DATE_CLASS_SELECTOR)
+        if class_el is not None:
+            text = (
+                class_el.get("datetime")
+                or class_el.get("content")
+                or class_el.get_text(strip=True)
+            )
+            if text:
+                return text
+        return cls._date_from_jsonld(container)
+
+    @classmethod
+    def _date_from_url(cls, url: str) -> str | None:
+        """Turn a /2026/05/28/ URL fragment into an ISO date string."""
+        if not url:
+            return None
+        match = cls._URL_DATE_RE.search(url)
+        if not match:
+            return None
+        y, mo, d = match.groups()
+        return f"{y}-{int(mo):02d}-{int(d):02d}"
+
+    @classmethod
+    def _extract_page_date(cls, soup) -> str | None:
+        """Page-level publish date from Open Graph / Dublin Core / JSON-LD."""
+        for tag, attrs in cls._PAGE_DATE_META:
+            el = soup.find(tag, attrs=attrs)
+            if el and el.get("content"):
+                return el["content"]
+        return cls._date_from_jsonld(soup)
+
+    @staticmethod
+    def _date_from_jsonld(parent) -> str | None:
+        """Walk JSON-LD ``<script>`` blocks under ``parent`` for a datePublished."""
+        for script in parent.find_all("script", type="application/ld+json", limit=3):
+            try:
+                data = json.loads(script.string or "")
+            except (json.JSONDecodeError, TypeError):
+                continue
+            for obj in (data if isinstance(data, list) else [data]):
+                if not isinstance(obj, dict):
+                    continue
+                date = obj.get("datePublished") or obj.get("dateCreated")
+                if date:
+                    return date
+                # Some sites wrap things in @graph
+                for sub in obj.get("@graph", []) or []:
+                    if isinstance(sub, dict):
+                        date = sub.get("datePublished") or sub.get("dateCreated")
+                        if date:
+                            return date
+        return None

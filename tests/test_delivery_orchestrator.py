@@ -1,0 +1,173 @@
+"""End-to-end test for the System 3 DeliveryOrchestrator.
+
+Uses an in-memory DataStore, a fake LLM (returns a canned summary string), and
+a fake EmailSender (records what it would have sent). Verifies that
+unreported findings/events flow into the rendered HTML, get marked reported
+on send, and produce a reports-table row.
+"""
+
+import asyncio
+
+from lib.data_store import DataStore
+from lib.email_sender import EmailSender
+from systems.system3_delivery.orchestrator import DeliveryOrchestrator
+from systems.system3_delivery.summarizer import ReportSummarizer
+
+
+class FakeLLM:
+    async def generate_weekly_summary(self, findings, events):
+        return "Solid-state cells led the field."
+
+
+class _FakeEmails:
+    def __init__(self):
+        self.sent = []
+
+    def send(self, params):
+        self.sent.append(params)
+        return {"id": "fake"}
+
+
+class FakeResendClient:
+    def __init__(self):
+        self.Emails = _FakeEmails()
+
+
+async def _seeded_store() -> DataStore:
+    store = DataStore(":memory:")
+    await store.init_db()
+    await store.save_finding({
+        "id": "f1", "focus_area": "energy_storage",
+        "agent": "energy_storage_agent", "title": "Solid-state battery hits 1000 cycles",
+        "summary": "Durable cell at MIT.", "relevance_score": 9.0,
+        "researchers": ["Dr. Jane Smith"], "affiliation": "MIT",
+        "source_url": "https://ex.com/f1", "source_type": "preprint",
+    })
+    await store.save_event({
+        "id": "e1", "city": "boston", "agent": "boston_events_agent",
+        "event_name": "MIT Energy Night", "event_date": "2026-06-15",
+        "venue": "MIT Media Lab", "url": "https://ex.com/e1",
+        "description": "Panel.", "cost": "Free", "event_type": "panel",
+        "relevance_tags": ["power_electronics"], "relevance_score": 8.0,
+    })
+    return store
+
+
+def test_orchestrator_end_to_end_sends_and_marks_reported():
+    async def body():
+        store = await _seeded_store()
+        client = FakeResendClient()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=client),
+            recipient="team@example.com",
+        )
+        result = await orch.run()
+
+        sent_params = client.Emails.sent[0]
+        # Items should now be marked reported.
+        remaining_findings = await store.get_unreported_findings()
+        remaining_events = await store.get_unreported_events()
+        # And the reports table should hold a row.
+        async with store.connection.execute(
+            "SELECT findings_count, events_count, recipient, status FROM reports"
+        ) as cur:
+            log_row = await cur.fetchone()
+        return result, sent_params, remaining_findings, remaining_events, dict(log_row)
+
+    result, sent, remaining_f, remaining_e, log_row = asyncio.run(body())
+
+    assert result["sent"] is True
+    assert result["findings"] == 1 and result["events"] == 1
+    # The rendered HTML carries the brief's substance.
+    assert "Solid-state battery hits 1000 cycles" in sent["html"]
+    assert "MIT Energy Night" in sent["html"]
+    assert "Dr. Jane Smith" in sent["html"]   # surfaced as a notable contact
+    # Reported.
+    assert remaining_f == []
+    assert remaining_e == []
+    # Logged.
+    assert log_row["findings_count"] == 1
+    assert log_row["events_count"] == 1
+    assert log_row["recipient"] == "team@example.com"
+    assert log_row["status"] == "sent"
+
+
+def test_dry_run_writes_html_and_marks_reported():
+    """Dry-run still marks items reported (preview = published from our POV)."""
+    async def body():
+        store = await _seeded_store()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key=None, client=None),  # unconfigured
+            recipient="team@example.com",
+        )
+        result = await orch.run(dry_run=True)
+        remaining_findings = await store.get_unreported_findings()
+        return result, remaining_findings
+
+    result, remaining = asyncio.run(body())
+    assert result["dry_run"] is True
+    assert result["status"] == "dry_run"
+    assert result["html_path"] is not None
+    assert remaining == []   # marked reported on dry-run too
+
+
+def test_skipped_when_nothing_to_report():
+    async def body():
+        store = DataStore(":memory:")
+        await store.init_db()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=FakeResendClient()),
+        )
+        return await orch.run()
+
+    result = asyncio.run(body())
+    assert result["skipped"] is True
+    assert result["findings"] == 0 and result["events"] == 0
+
+
+def test_send_failure_keeps_items_unreported_and_saves_html(tmp_path, monkeypatch):
+    """If Resend errors, items stay unreported so the next run can retry."""
+    monkeypatch.setattr(
+        "systems.system3_delivery.orchestrator.FALLBACK_REPORT_PATH",
+        tmp_path / "latest_report.html",
+    )
+
+    class _Boom:
+        def send(self, params):
+            raise RuntimeError("resend down")
+
+    class _BoomClient:
+        Emails = _Boom()
+
+    async def body():
+        store = await _seeded_store()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=_BoomClient()),
+        )
+        result = await orch.run()
+        remaining = await store.get_unreported_findings()
+        async with store.connection.execute(
+            "SELECT status, error_message FROM reports"
+        ) as cur:
+            row = await cur.fetchone()
+        return result, remaining, dict(row)
+
+    result, remaining, row = asyncio.run(body())
+    assert result["sent"] is False
+    assert result["status"] == "failed"
+    assert len(remaining) == 1                       # not marked reported
+    assert row["status"] == "failed"
+    assert "resend down" in row["error_message"]
+    assert (tmp_path / "latest_report.html").exists()  # fallback saved

@@ -127,23 +127,42 @@ async def sweep() -> None:
     _print_sweep_summary(events_result)
 
 
-async def run(command: str) -> None:
+async def report(dry_run: bool = False) -> None:
+    """Run System 3 — compile and deliver the weekly intelligence brief."""
+    if not dry_run and not os.getenv("RESEND_API_KEY"):
+        log.warning(
+            "RESEND_API_KEY is not set — the email send will fail and the "
+            "report HTML will be saved to data/latest_report.html instead. "
+            "Use `report --dry-run` if you only want a preview."
+        )
+    from systems.system3_delivery.orchestrator import DeliveryOrchestrator
+    result = await DeliveryOrchestrator().run(dry_run=dry_run)
+    print(f"\nDelivery result: {result}\n")
+
+
+async def run(command: str, dry_run: bool = False) -> None:
     if command == "init-db":
         await init_db()
     elif command == "sweep":
         await sweep()
     elif command == "report":
-        # System 3 — implemented in a later task (Day 7).
-        log.warning("'report' is not implemented yet")
+        await report(dry_run=dry_run)
     elif command == "full":
-        log.warning("'full' is not implemented yet")
+        await sweep()
+        await report(dry_run=dry_run)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Lab2Scale Automation System")
     parser.add_argument("command", choices=["sweep", "report", "full", "init-db"])
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="For 'report' / 'full': render HTML to data/latest_report.html "
+             "instead of sending via Resend.",
+    )
     args = parser.parse_args()
-    asyncio.run(run(args.command))
+    asyncio.run(run(args.command, dry_run=args.dry_run))
 
 
 if __name__ == "__main__":

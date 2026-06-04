@@ -53,9 +53,14 @@ class ReportSummarizer:
     async def build_report_data(
         self, findings: list[dict], events: list[dict]
     ) -> dict[str, Any]:
-        executive_summary = ""
         if findings or events:
             executive_summary = await self.llm.generate_weekly_summary(findings, events)
+        else:
+            executive_summary = (
+                "No new findings or events landed this period. The monitoring "
+                "pipeline ran as scheduled — the next brief will return to its "
+                "regular cadence as soon as new items are picked up."
+            )
 
         findings_by_focus = self._group_findings(findings)
         events_by_city = self._group_events(events)

@@ -71,10 +71,12 @@ def test_notable_contacts_dedup_and_cap():
     assert data["contacts"][0]["contact"] == "jsmith@mit.edu"
 
 
-def test_empty_inputs_yield_no_summary():
+def test_empty_inputs_yield_heartbeat_summary_without_llm_call():
     s = ReportSummarizer(FakeLLM("should not be called"))
     data = asyncio.run(s.build_report_data([], []))
-    assert data["executive_summary"] == ""
+    # Heartbeat fallback (no Sonnet call) so the cron stays visible even on
+    # quiet weeks.
+    assert "No new findings or events" in data["executive_summary"]
     assert s.llm.calls == 0
     assert data["findings_by_focus"] == {}
     assert data["events_by_city"] == {}

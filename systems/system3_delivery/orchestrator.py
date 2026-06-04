@@ -69,21 +69,16 @@ class DeliveryOrchestrator:
         log.info("Compiling report from %d finding(s), %d event(s)",
                  len(findings), len(events))
 
-        if not findings and not events:
-            log.warning("No unreported findings or events — skipping send.")
-            await self._cleanup_resources()
-            return {
-                "system": "delivery",
-                "findings": 0,
-                "events": 0,
-                "sent": False,
-                "skipped": True,
-                "dry_run": dry_run,
-            }
+        is_empty = not findings and not events
+        if is_empty:
+            log.info("No unreported items — sending heartbeat brief.")
 
         data = await self.summarizer.build_report_data(findings, events)
         html = self.template.render(**data)
-        subject = f"Lab2Scale Weekly Intelligence Brief — {data['week_label']}"
+        suffix = " (no new items)" if is_empty else ""
+        subject = (
+            f"Lab2Scale Weekly Intelligence Brief — {data['week_label']}{suffix}"
+        )
 
         status = "sent"
         error_message: str | None = None
@@ -108,8 +103,8 @@ class DeliveryOrchestrator:
 
         # Only mark items reported when we actually delivered (or dry-ran for
         # preview). A real send failure leaves items unreported so the next
-        # run can retry them.
-        if sent or dry_run:
+        # run can retry them. Nothing to mark on a heartbeat brief.
+        if (sent or dry_run) and not is_empty:
             await self.store.mark_reported([f["id"] for f in findings], "findings")
             await self.store.mark_reported([e["id"] for e in events], "events")
 
@@ -129,6 +124,7 @@ class DeliveryOrchestrator:
             "sent": sent,
             "dry_run": dry_run,
             "status": status,
+            "is_empty": is_empty,
             "recipient": self.recipient,
             "subject": subject,
             "html_path": str(FALLBACK_REPORT_PATH) if (dry_run or not sent) else None,

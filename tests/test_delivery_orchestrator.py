@@ -15,8 +15,13 @@ from systems.system3_delivery.summarizer import ReportSummarizer
 
 
 class FakeLLM:
+    def __init__(self, text: str = "Solid-state cells led the field."):
+        self.text = text
+        self.calls = 0
+
     async def generate_weekly_summary(self, findings, events):
-        return "Solid-state cells led the field."
+        self.calls += 1
+        return self.text
 
 
 class _FakeEmails:
@@ -117,21 +122,57 @@ def test_dry_run_writes_html_and_marks_reported():
     assert remaining == []   # marked reported on dry-run too
 
 
-def test_skipped_when_nothing_to_report():
+def test_empty_queue_still_sends_a_heartbeat_brief():
+    """When there's nothing unreported, send a "no new items" email anyway
+    so the weekly cron remains a visible heartbeat."""
+
     async def body():
         store = DataStore(":memory:")
         await store.init_db()
-        llm = FakeLLM()
+        client = FakeResendClient()
+        llm = FakeLLM("should not be called for empty queue")
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=client),
+            recipient="team@example.com",
+        )
+        result = await orch.run()
+        async with store.connection.execute(
+            "SELECT findings_count, events_count, status FROM reports"
+        ) as cur:
+            row = await cur.fetchone()
+        return result, client.Emails.sent, dict(row)
+
+    result, sent, log_row = asyncio.run(body())
+
+    # We DID send — and the subject signals the empty state.
+    assert result["sent"] is True
+    assert result["is_empty"] is True
+    assert result["findings"] == 0 and result["events"] == 0
+    assert len(sent) == 1
+    assert "(no new items)" in sent[0]["subject"]
+    # The reports table records the heartbeat.
+    assert log_row["findings_count"] == 0
+    assert log_row["events_count"] == 0
+    assert log_row["status"] == "sent"
+
+
+def test_empty_brief_does_not_call_llm():
+    """No findings or events → no Sonnet call (cost guard)."""
+    async def body():
+        store = DataStore(":memory:")
+        await store.init_db()
+        llm = FakeLLM("should never appear")
         orch = DeliveryOrchestrator(
             store=store, llm=llm,
             summarizer=ReportSummarizer(llm),
             email_sender=EmailSender(api_key="re_test", client=FakeResendClient()),
         )
-        return await orch.run()
+        await orch.run()
+        return llm.calls
 
-    result = asyncio.run(body())
-    assert result["skipped"] is True
-    assert result["findings"] == 0 and result["events"] == 0
+    assert asyncio.run(body()) == 0
 
 
 def test_send_failure_keeps_items_unreported_and_saves_html(tmp_path, monkeypatch):

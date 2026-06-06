@@ -21,11 +21,23 @@ log = logging.getLogger("lib.llm")
 DEFAULT_SCORING_MODEL = "claude-haiku-4-5"
 DEFAULT_SUMMARY_MODEL = "claude-sonnet-4-6"
 
-# Items scoring at or above this are kept (per spec).
-RELEVANCE_THRESHOLD = 6.0
+# Items scoring at or above this are kept. Calibrated against a real sweep
+# (8.0 keeps the top ~18% — sharp signal without the long tail).
+RELEVANCE_THRESHOLD = 8.0
 
 # Cap content sent to the model to keep token cost bounded.
 _MAX_CONTENT_CHARS = 6000
+
+# Approximate prices per 1M tokens (USD). Used for cost summaries — not a
+# billing source of truth. Update when Anthropic's published pricing changes.
+_MODEL_PRICING = {
+    "claude-haiku-4-5":        {"input": 1.0,  "output": 5.0},
+    "claude-sonnet-4-6":       {"input": 3.0,  "output": 15.0},
+    "claude-opus-4-7":         {"input": 15.0, "output": 75.0},
+    "claude-3-5-haiku-latest": {"input": 0.8,  "output": 4.0},
+    "claude-3-5-sonnet-latest":{"input": 3.0,  "output": 15.0},
+}
+_UNKNOWN_MODEL_PRICING = {"input": 0.0, "output": 0.0}
 
 # --- Prompt templates (verbatim from IMPLEMENTATION_SPEC Section 4.2) --------
 
@@ -97,8 +109,8 @@ def _is_nullish(value) -> bool:
 
 SUMMARY_SYSTEM_PROMPT = (
     "You are the lead intelligence analyst for Lab2Scale, a deep tech "
-    "commercialization firm. You write concise, high-signal weekly briefs for "
-    "the team."
+    "commercialization firm. You write very short, high-signal weekly briefs. "
+    "Brevity is a hard requirement — readers scan in 10 seconds."
 )
 
 # --- Event-specific prompts (System 2) --------------------------------------
@@ -217,6 +229,9 @@ class LLMFilter:
         )
         self.total_input_tokens = 0
         self.total_output_tokens = 0
+        # Per-model token tracking so a mixed Haiku + Sonnet run reports
+        # spend by model. Empty until at least one call is made.
+        self.tokens_by_model: dict[str, dict[str, int]] = {}
 
     @property
     def client(self):
@@ -236,9 +251,52 @@ class LLMFilter:
         out_tok = getattr(usage, "output_tokens", 0) or 0
         self.total_input_tokens += in_tok
         self.total_output_tokens += out_tok
+        bucket = self.tokens_by_model.setdefault(model, {"input": 0, "output": 0})
+        bucket["input"] += in_tok
+        bucket["output"] += out_tok
         log.info(
             "LLM %s usage: input=%d output=%d (cumulative in=%d out=%d)",
             model, in_tok, out_tok, self.total_input_tokens, self.total_output_tokens,
+        )
+
+    def cost_estimate(self) -> dict:
+        """Per-model token + USD estimate. Cost numbers are approximate."""
+        by_model: dict[str, dict] = {}
+        total_cost = 0.0
+        for model, toks in self.tokens_by_model.items():
+            price = _MODEL_PRICING.get(model, _UNKNOWN_MODEL_PRICING)
+            in_cost = toks["input"] * price["input"] / 1_000_000
+            out_cost = toks["output"] * price["output"] / 1_000_000
+            cost = in_cost + out_cost
+            by_model[model] = {
+                "input": toks["input"],
+                "output": toks["output"],
+                "cost_usd": round(cost, 4),
+                "known_pricing": model in _MODEL_PRICING,
+            }
+            total_cost += cost
+        return {
+            "by_model": by_model,
+            "total_input": self.total_input_tokens,
+            "total_output": self.total_output_tokens,
+            "total_cost_usd": round(total_cost, 4),
+        }
+
+    def log_usage_summary(self) -> None:
+        """Emit a human-readable LLM spend summary. No-op when nothing ran."""
+        est = self.cost_estimate()
+        if not est["by_model"]:
+            return
+        log.info("---- LLM usage summary ----")
+        for model, data in est["by_model"].items():
+            tag = "" if data["known_pricing"] else "  (pricing unknown)"
+            log.info(
+                "  %s: %d in / %d out  ~ $%.4f%s",
+                model, data["input"], data["output"], data["cost_usd"], tag,
+            )
+        log.info(
+            "  TOTAL: %d in / %d out  ~ $%.4f",
+            est["total_input"], est["total_output"], est["total_cost_usd"],
         )
 
     async def score_relevance(self, content: str, focus_area: str) -> float:
@@ -417,10 +475,13 @@ class LLMFilter:
             )
         lines += [
             "",
-            "Write an executive summary of 3-5 sentences covering the week's most "
-            "significant developments. Highlight the top findings, rank by novelty "
-            "and technology readiness, and flag any actionable commercialization "
-            "opportunities or notable contacts worth reaching out to. Return prose "
-            "only — no preamble, no headers.",
+            "Write the executive brief as 2-4 NUMBERED bullet points. Each bullet "
+            "is ONE short sentence, ~15-20 words, leading with the actor (who did "
+            "what). Lead with the most important. Format EXACTLY:",
+            "",
+            "1. Actor did thing.",
+            "2. Other actor did other thing.",
+            "",
+            "Return ONLY the numbered list. No preamble, no headers, no closing line.",
         ]
         return "\n".join(lines)

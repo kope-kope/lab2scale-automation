@@ -14,9 +14,9 @@ university_events:
   - name: "MIT Energy Initiative Events"
     url: "https://energy.mit.edu/events/"
     calendar_url: "https://calendar.mit.edu/department/mit_energy_initiative"
-    rss_url: "https://calendar.mit.edu/department/mit_energy_initiative/calendar.rss"
+    rss_url: "https://energy.mit.edu/events/feed/"
     method: rss
-    notes: "Localist platform. RSS and iCal feeds supported natively."
+    notes: "WordPress feed on energy.mit.edu. Often empty between semesters."
 
   - name: "MIT PSFC Seminars & Events"
     url: "https://www.psfc.mit.edu/seminars-and-events/"
@@ -46,9 +46,8 @@ university_events:
   # --- Harvard ---
   - name: "Harvard SEAS Events"
     url: "https://events.seas.harvard.edu/"
-    rss_url: "https://events.seas.harvard.edu/calendar.rss"
-    method: rss
-    notes: "Localist platform with RSS support."
+    method: web_scrape
+    notes: "RSS endpoint missing (406/404 on all known Localist patterns)."
 
   - name: "Harvard Power & AI Initiative Events"
     url: "https://pai.seas.harvard.edu/Events.html"

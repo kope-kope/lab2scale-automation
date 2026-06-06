@@ -200,6 +200,54 @@ def test_generate_weekly_summary_returns_empty_on_error():
 # ----- model configuration --------------------------------------------------
 
 
+def test_cost_estimate_tracks_per_model_with_known_pricing():
+    """tokens_by_model accumulates separately for Haiku and Sonnet, and the
+    USD estimate uses the right pricing for each."""
+
+    def handler(kw):
+        # Pretend the Haiku scoring call cost some tokens; the Sonnet summary
+        # call cost more output tokens (typical shape).
+        if kw["model"] == "claude-haiku-4-5":
+            return _text_response('{"score": 7.0}', in_tok=1_000_000, out_tok=500_000)
+        return _text_response("brief", in_tok=1_000_000, out_tok=1_000_000)
+
+    client = FakeClient(handler)
+    f = LLMFilter(client=client,
+                  scoring_model="claude-haiku-4-5",
+                  summary_model="claude-sonnet-4-6")
+    asyncio.run(f.score_relevance("c", "energy_storage"))
+    asyncio.run(f.generate_weekly_summary([], []))
+
+    est = f.cost_estimate()
+    haiku = est["by_model"]["claude-haiku-4-5"]
+    sonnet = est["by_model"]["claude-sonnet-4-6"]
+    # Haiku: 1M in × $1 + 0.5M out × $5 = $1 + $2.5 = $3.50
+    assert haiku["cost_usd"] == 3.5
+    # Sonnet: 1M in × $3 + 1M out × $15 = $3 + $15 = $18.00
+    assert sonnet["cost_usd"] == 18.0
+    assert est["total_cost_usd"] == 21.5
+    assert est["total_input"] == 2_000_000
+    assert est["total_output"] == 1_500_000
+
+
+def test_cost_estimate_marks_unknown_pricing():
+    client = FakeClient(lambda kw: _text_response('{"score": 5.0}', in_tok=100, out_tok=50))
+    f = LLMFilter(client=client, scoring_model="claude-experimental-x")
+    asyncio.run(f.score_relevance("c", "semiconductors"))
+    est = f.cost_estimate()
+    assert est["by_model"]["claude-experimental-x"]["known_pricing"] is False
+    assert est["by_model"]["claude-experimental-x"]["cost_usd"] == 0.0
+
+
+def test_log_usage_summary_is_noop_when_no_calls_made():
+    """A run that made zero API calls (empty queue → heartbeat brief) shouldn't
+    emit a misleading 'usage summary' header."""
+    f = LLMFilter(client=FakeClient(lambda kw: _text_response("{}")))
+    # No calls performed — log_usage_summary should silently return.
+    f.log_usage_summary()
+    assert f.tokens_by_model == {}
+
+
 def test_models_default_to_haiku_and_sonnet(monkeypatch):
     monkeypatch.delenv("LLM_SCORING_MODEL", raising=False)
     monkeypatch.delenv("LLM_SUMMARY_MODEL", raising=False)

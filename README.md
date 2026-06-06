@@ -131,6 +131,25 @@ Each module has unit tests; orchestrator-level tests use fake scrapers and
 fake LLMs against an in-memory SQLite. Live verification scripts live in
 `scripts/try_*.py` (gitignored).
 
+### Email render verification across clients
+
+Before a real send, preview the rendered email with representative data:
+
+```bash
+# Seeds the DB with diverse mock findings + events, then dry-runs the report.
+python scripts/try_seed.py
+open data/latest_report.html
+```
+
+To verify rendering across actual mail clients:
+
+1. Open `data/latest_report.html` in Chrome / Safari / Firefox
+2. Save the page or copy the HTML and email it to test inboxes (Gmail, Outlook, Apple Mail)
+3. For a comprehensive check, paste the HTML into [Litmus](https://litmus.com) or [Email on Acid](https://www.emailonacid.com)
+
+The template uses table-based layout with inline CSS and stays under 600px,
+which is the broadly-compatible pattern.
+
 ---
 
 ## Project layout
@@ -162,21 +181,28 @@ Automation/
 
 ---
 
-## Deployment — Railway
+## Deployment — Railway (ephemeral model)
 
-Auto-deploy on push to main is the goal: connect this repo to Railway once,
-and every merge to `main` triggers a rebuild and redeploy.
+Auto-deploy on push to main: connect this repo to Railway once, and every
+merge to `main` triggers a rebuild and redeploy.
 
-### One-time setup (5 minutes)
+**The deployment is intentionally ephemeral.** Each weekly cron run is a
+fresh container: init-db creates a clean SQLite, the sweep finds whatever
+is new in the past week, the report goes out, the container exits and the
+DB is discarded. The next week starts from scratch — no volume, no
+Postgres, no cross-week state.
+
+Why this works:
+- The rolling 7-day date filter in `BaseAgent` already drops anything
+  older than a week, so `seen_hashes` adds nothing meaningful across runs.
+- Lab2Scale's brief is "what's new this week" — by definition fresh.
+- One container, one run, one email. Simplest possible operational shape.
+
+### One-time setup (3 minutes)
 
 1. **Create a Railway project** at https://railway.app → New Project → Deploy from GitHub repo → pick `lab2scale-automation`. Railway reads `Dockerfile` + `railway.toml` and builds.
 
-2. **Add a persistent volume** (so the SQLite DB and `seen_hashes` survive between cron runs):
-   - In the service settings → Volumes → New Volume
-   - Mount path: `/app/data`
-   - Size: 1 GB is plenty
-
-3. **Set environment variables** in the service's Variables tab (paste these in; see `context.md` for the full reference):
+2. **Set environment variables** in the service's Variables tab (paste these in; see `context.md` for the full reference):
    ```
    ANTHROPIC_API_KEY=sk-ant-...
    RESEND_API_KEY=re_...
@@ -186,9 +212,9 @@ and every merge to `main` triggers a rebuild and redeploy.
    LOG_LEVEL=INFO
    ```
 
-4. **Verify the cron schedule.** `railway.toml` declares one weekly cron — Monday 14:00 UTC (9am ET) running `python main.py full`. That's both the sweep and the report in one shot. If you want to adjust, the schedule lives in `railway.toml` → `[deploy] cronSchedule`.
+3. **Verify the cron schedule.** `railway.toml` declares one weekly cron — Monday 14:00 UTC (9am ET) running `python main.py full`. That's both the sweep and the report in one shot. If you want to adjust, the schedule lives in `railway.toml` → `[deploy] cronSchedule`.
 
-5. **Confirm auto-deploy.** In the service settings → Source, make sure the branch is set to `main`. Railway shows recent deploys in the dashboard — push something small to `main` and watch a rebuild kick off.
+4. **Confirm auto-deploy.** In the service settings → Source, make sure the branch is set to `main`. Railway shows recent deploys in the dashboard — push something small to `main` and watch a rebuild kick off.
 
 ### Verifying the first run
 
@@ -197,27 +223,16 @@ and every merge to `main` triggers a rebuild and redeploy.
 - The email lands in `REPORT_RECIPIENT`'s inbox.
 - The SQLite DB persists on the volume; subsequent runs reuse it.
 
-### Upgrading to 3×-daily sweeps + separate weekly report (production cadence)
+### Future: 3×-daily sweeps (not currently planned)
 
-`railway.toml`'s default is **one weekly cron** running `full` — the
-simplest setup that works with SQLite + a single volume. The spec's
-intended production cadence is *three sweeps a day plus one Monday
-report*, which needs a shared database that two cron services can both
-write to. Path:
-
-1. Add the Railway **Postgres** plugin (free tier covers this).
-2. Add `asyncpg` to `requirements.txt` and switch `DataStore` to dispatch
-   on `DATABASE_URL` scheme. **Not yet implemented** — tracked as Day 10
-   work.
-3. Replace the single service with two:
-   - **sweep** service — command `python main.py sweep`, cron `0 11,18,1 * * *`
-   - **report** service — command `python main.py report`, cron `0 14 * * 1`
-4. Both services read `DATABASE_URL` (Railway injects this automatically
-   when the Postgres plugin is attached).
-
-The same `Dockerfile` and `railway.toml` patterns work for both services —
-each service just overrides `startCommand` and `cronSchedule` in the
-dashboard.
+The original architecture imagined 3×-daily sweeps accumulating into a
+single weekly report. That would require persistent shared state across
+runs (Postgres + a shared DB), which adds operational complexity. The
+ephemeral weekly model above gets you ~90% of the value at ~10% of the
+complexity. If you ever want to bring it back: add a Railway Postgres
+plugin, swap `aiosqlite` for an `asyncpg` driver in `lib/data_store.py`,
+add a second cron service for `sweep`, leave the existing service to run
+`report` weekly.
 
 ### Cron timezone reference
 

@@ -116,6 +116,10 @@ class DeliveryOrchestrator:
             error_message=error_message,
         )
 
+        # Defensive — test fakes don't always implement the optional helper.
+        log_fn = getattr(self.llm, "log_usage_summary", None)
+        if callable(log_fn):
+            log_fn()
         await self._cleanup_resources()
         return {
             "system": "delivery",

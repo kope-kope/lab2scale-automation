@@ -147,6 +147,9 @@ async def sweep() -> None:
 
     _print_sweep_summary(research_result)
     _print_sweep_summary(events_result)
+    log_fn = getattr(llm, "log_usage_summary", None)
+    if callable(log_fn):
+        log_fn()
 
 
 async def report(dry_run: bool = False) -> None:

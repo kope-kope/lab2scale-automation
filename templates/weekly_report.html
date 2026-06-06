@@ -21,11 +21,19 @@
           </tr>
 
           <!-- Executive summary -->
-          {% if executive_summary %}
+          {% if executive_bullets or executive_summary %}
           <tr>
             <td style="padding:24px 28px;border-bottom:1px solid #e5e7eb;">
               <h2 style="margin:0 0 12px 0;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:#475569;">Executive summary</h2>
+              {% if executive_bullets %}
+              <ol style="margin:0;padding:0 0 0 20px;font-size:15px;line-height:1.6;color:#0f172a;">
+                {% for bullet in executive_bullets %}
+                <li style="margin:6px 0;padding-left:4px;">{{ bullet }}</li>
+                {% endfor %}
+              </ol>
+              {% else %}
               <div style="font-size:15px;line-height:1.6;color:#0f172a;white-space:pre-wrap;">{{ executive_summary }}</div>
+              {% endif %}
             </td>
           </tr>
           {% endif %}

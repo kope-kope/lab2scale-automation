@@ -137,7 +137,7 @@ industry_orgs:
     url: "https://www.dertaskforce.com/"
     rss_url: "https://www.dertaskforce.com/feed"
     method: rss
-    notes: "Substack. Distributed energy community in NYC."
+    notes: "Substack feed — content is newsletters/podcasts, not actual events. LLM will usually score these low; kept for reference."
 
 # -----------------------------------------------------------------------------
 # 4. EVENT AGGREGATORS

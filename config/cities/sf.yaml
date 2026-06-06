@@ -110,9 +110,8 @@ industry_orgs:
 
   - name: "SEMI Events Calendar"
     url: "https://www.semi.org/en/connect/events/calendar"
-    rss_url: "https://www.semi.org/en/connect/events/rss.xml"
-    method: rss
-    notes: "SEMI HQ in Milpitas. RSS confirmed. Filter for Bay Area events."
+    method: web_scrape
+    notes: "SEMI HQ in Milpitas. RSS endpoint sits behind Cloudflare (403) — scrape may also be blocked but the agent handles it gracefully."
 
   - name: "California Energy Commission Events"
     url: "https://www.energy.ca.gov/events"

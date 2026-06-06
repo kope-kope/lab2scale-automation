@@ -7,10 +7,31 @@ surfaces a Notable Contacts list from the top findings.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any
 
 from lib.llm import LLMFilter
+
+# Recognize "1. ", "1) ", "- ", "• ", "* " bullet markers at the start of a line.
+_BULLET_RE = re.compile(r"^\s*(?:\d+[.)]\s+|[-•*]\s+)(.*?)\s*$")
+
+
+def parse_bullets(text: str) -> list[str]:
+    """Pull numbered or hyphenated bullet items out of LLM text.
+
+    Returns an empty list if the text isn't bullet-formatted, so the template
+    can fall back to plain prose for the heartbeat brief.
+    """
+    bullets: list[str] = []
+    for raw in (text or "").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        match = _BULLET_RE.match(line)
+        if match:
+            bullets.append(match.group(1).strip())
+    return bullets
 
 # Human labels and subtle color accents used by the template.
 FOCUS_LABELS = {
@@ -41,7 +62,9 @@ CITY_PALETTE = {
     "sf": "#059669",       # green
 }
 
-_MAX_CONTACTS = 10
+_MAX_CONTACTS = 5
+# Cap displayed items per group so a long sweep produces a SHORT brief.
+_MAX_PER_GROUP = 5
 
 
 class ReportSummarizer:
@@ -53,8 +76,20 @@ class ReportSummarizer:
     async def build_report_data(
         self, findings: list[dict], events: list[dict]
     ) -> dict[str, Any]:
-        if findings or events:
-            executive_summary = await self.llm.generate_weekly_summary(findings, events)
+        # Group + cap first so everything downstream — the Sonnet summary,
+        # the notable contacts, the template — works with the SAME tight set
+        # the reader actually sees.
+        findings_by_focus = self._group_findings(findings)
+        events_by_city = self._group_events(events)
+        visible_findings = [
+            f for items in findings_by_focus.values() for f in items
+        ]
+        visible_events = [e for items in events_by_city.values() for e in items]
+
+        if visible_findings or visible_events:
+            executive_summary = await self.llm.generate_weekly_summary(
+                visible_findings, visible_events
+            )
         else:
             executive_summary = (
                 "No new findings or events landed this period. The monitoring "
@@ -62,13 +97,12 @@ class ReportSummarizer:
                 "regular cadence as soon as new items are picked up."
             )
 
-        findings_by_focus = self._group_findings(findings)
-        events_by_city = self._group_events(events)
-        contacts = self._notable_contacts(findings)
+        contacts = self._notable_contacts(visible_findings)
 
         return {
             "week_label": self._week_label(),
             "executive_summary": executive_summary,
+            "executive_bullets": parse_bullets(executive_summary),
             "findings_by_focus": findings_by_focus,
             "events_by_city": events_by_city,
             "contacts": contacts,
@@ -84,12 +118,14 @@ class ReportSummarizer:
 
     @staticmethod
     def _group_findings(findings: list[dict]) -> dict[str, list[dict]]:
-        """Group by focus area, each group sorted by relevance_score DESC."""
+        """Group by focus area, each group sorted by relevance_score DESC,
+        capped at _MAX_PER_GROUP so the brief stays short."""
         grouped: dict[str, list[dict]] = {}
         for f in findings:
             grouped.setdefault(f.get("focus_area") or "other", []).append(f)
         for focus, items in grouped.items():
             items.sort(key=lambda x: x.get("relevance_score") or 0, reverse=True)
+            del items[_MAX_PER_GROUP:]
         # Order focus areas by the canonical sequence (research priorities).
         ordered_keys = list(FOCUS_LABELS.keys()) + [
             k for k in grouped if k not in FOCUS_LABELS
@@ -98,12 +134,14 @@ class ReportSummarizer:
 
     @staticmethod
     def _group_events(events: list[dict]) -> dict[str, list[dict]]:
-        """Group by city, each group sorted by event_date ASC."""
+        """Group by city, each group sorted by event_date ASC, capped at
+        _MAX_PER_GROUP."""
         grouped: dict[str, list[dict]] = {}
         for e in events:
             grouped.setdefault(e.get("city") or "other", []).append(e)
         for city, items in grouped.items():
             items.sort(key=lambda x: x.get("event_date") or "")
+            del items[_MAX_PER_GROUP:]
         ordered_keys = list(CITY_LABELS.keys()) + [
             k for k in grouped if k not in CITY_LABELS
         ]

@@ -38,14 +38,13 @@ Read this before deploying — it's the surface area you need to think about.
 ### Sweep behavior
 | Variable | Default | Notes |
 |---|---|---|
-| `SWEEP_METHODS` | `rss` | Comma-separated list. Set `rss,scrape` to also fetch `web_scrape` sources. Scrape **roughly triples** per-sweep cost on the first run. |
+| `SWEEP_METHODS` | `rss` | Comma-separated list for **System 1 (research)**. Set `rss,scrape` to also fetch `web_scrape` sources. Scrape **roughly triples** per-sweep cost on the first run. System 2 (events) ignores this — it uses Tavily search. |
 | `LOG_LEVEL` | `INFO` | Standard Python log level. |
 
 ### Optional / future
 | Variable | Used by | Notes |
 |---|---|---|
-| `EVENTBRITE_API_KEY` | System 2 event sources | Not yet wired. |
-| `MEETUP_API_KEY` | System 2 event sources | Not yet wired. |
+| `TAVILY_API_KEY` | System 2 (events) | **Required for event discovery.** System 2 finds events via Tavily web search (one query per focus area × city). Without it, events are skipped (research still runs). Free tier: 1000 searches/month; a full sweep uses 15. |
 | `CRUNCHBASE_API_KEY` | startup tracking | Not yet wired. |
 | `RUN_SCHEDULE`, `REPORT_DAY`, `REPORT_TIME` | scheduler | Documentation only — actual scheduling is configured at the platform level (Railway cron, Cloud Scheduler, etc.). |
 
@@ -56,10 +55,10 @@ Read this before deploying — it's the surface area you need to think about.
 These live in source. Override via constructor args (for one-off runs in
 scripts or tests) or by changing the default in code.
 
-### `BaseAgent` (parent of `DomainAgent` and `CityAgent`)
+### `BaseAgent` (parent of `DomainAgent`, System 1 research)
 | Param | Default | What it does |
 |---|---|---|
-| `threshold` | `RELEVANCE_THRESHOLD = 6.0` | Items scoring below this are filtered out. `lib/llm.py:RELEVANCE_THRESHOLD`. |
+| `threshold` | `RELEVANCE_THRESHOLD = 8.0` | Items scoring below this are filtered out. `lib/llm.py:RELEVANCE_THRESHOLD`. |
 | `methods` | `None` (all) | When set (`{"rss"}`, `{"scrape"}`, etc.), restricts which source methods are fetched. |
 | `max_items` | `None` (no cap) | Cap on items scored per agent per run. Cost guard. |
 | `week_window_days` | `7` | Rolling lookback for the `published` date filter. `None` disables. |
@@ -67,11 +66,20 @@ scripts or tests) or by changing the default in code.
 ### `DomainAgent` (research, System 1)
 - Inherits all of the above; `week_window_days=7` filters by paper/article publish date.
 
-### `CityAgent` (events, System 2)
+### `SearchCityAgent` (events, System 2)
+Discovers events via **Tavily web search** — no feed configs, no scraping. Pipeline:
+`search (5 domain queries/city) → dedup by URL → score (Haiku, snippet) → extract (Haiku, full page text) → date + locality + cross-source filters → store`.
+
 | Param | Default | What it does |
 |---|---|---|
-| `week_window_days` | **`None`** | Events don't filter by listing date — conferences are often announced months ahead. |
-| `future_horizon_days` | **`30`** | Post-extraction filter: `event_date` must be within today → today+N days. Missing/unparseable dates dropped. |
+| `threshold` | `6.0` | Event relevance keep-threshold (Haiku `score_event_relevance`). |
+| `future_horizon_days` | **`30`** | `event_date` must be within today → today+N days. Missing/unparseable dates dropped. `None` disables. |
+| `max_results_per_query` | `10` | Tavily results per focus-area query (× 5 domains = up to 50/city). |
+
+Quality filters (in `systems/system2_events/search_city_agent.py`):
+- **Locality** (`CITY_LOCALITY`): drops events with no evidence of being in the city's metro. Token-based match on the *extracted* venue/name + snippet (not the raw page, which on aggregator pages lists other cities).
+- **Date extraction** uses Tavily `raw_content` (full page text) — snippets rarely contain the date.
+- **Cross-source dedup**: collapses the same event from different URLs by `(normalized name, date)`.
 
 ### `Scraper` (`lib/scraper.py`)
 | Param | Default | What it does |
@@ -99,11 +107,13 @@ These never affect production — they only matter when running the local try sc
 |---|---|---|---|
 | `DEMO_DB` | all try scripts | `data/lab2scale.db` | Path to the database. Use `:memory:` for a throwaway run. |
 | `DEMO_THRESHOLD` | all | `6.0` | Override the keep-threshold for this run. |
-| `DEMO_MAX_ITEMS` | all | `15` | Per-agent cap. Bump to `50`+ for richer runs. |
+| `DEMO_MAX_ITEMS` | research scripts | `15` | Per-agent cap. Bump to `50`+ for richer runs. |
 | `DEMO_DOMAINS` | try_rss / try_scrape | (all 5) | Comma-separated subset. |
-| `DEMO_CITIES` | try_events | (all 3) | Comma-separated subset. |
-| `DEMO_METHODS` | try_events | `rss` | Set `rss,scrape` to unlock the scrape sources. |
-| `DEMO_FUTURE_HORIZON` | try_events | `30` | Days. Use `0` to disable the future-horizon filter. |
+| `DEMO_CITIES` | try_event_search | (all 3) | Comma-separated subset of cities. |
+| `DEMO_MAX_RESULTS` | try_event_search | `10` | Tavily results per domain query. |
+| `DEMO_FUTURE_HORIZON` | try_event_search | `30` | Days. Use `0` to disable the future-horizon filter. |
+
+`scripts/try_event_search.py` is the events smoke test (Tavily search mode). Requires `TAVILY_API_KEY` + `ANTHROPIC_API_KEY`.
 
 ---
 

@@ -29,13 +29,6 @@ arxiv:
     method: rss
 """
 
-CITY_YAML = """
-university_events:
-  - name: "Boston Events stub"
-    url: "https://example.com/boston.rss"
-    method: rss
-"""
-
 # --- canned feed content --------------------------------------------------
 
 # Dates close to "now" so the week-window + horizon filters pass.
@@ -45,10 +38,14 @@ FEEDS = {
          "summary": "Researchers demonstrate a durable cell.",
          "published": "2026-06-03"},
     ],
-    "https://example.com/boston.rss": [
-        {"title": "MIT Energy Night", "link": "https://ex.com/e1",
-         "summary": "Next-gen power electronics panel.",
-         "published": "2026-06-01"},
+}
+
+# Events now come from Tavily web search, not feeds. Keyed by a location marker
+# that appears in the agent's query (which uses CITY_CONTEXT phrasing).
+EVENT_RESULTS = {
+    "Boston": [
+        {"url": "https://ex.com/e1", "title": "MIT Energy Night",
+         "content": "MIT Energy Night — next-gen power electronics panel at MIT", "score": 0.9},
     ],
 }
 
@@ -63,6 +60,23 @@ class FakeScraper:
     async def fetch_rss(self, url):
         self.fetches.append(url)
         return [dict(it) for it in self.feeds.get(url, [])]
+
+    async def close(self):
+        pass
+
+
+class FakeTavily:
+    """Returns results keyed by a location marker present in the query."""
+
+    def __init__(self, results_by_marker):
+        self.results_by_marker = results_by_marker
+
+    async def search(self, query, max_results=None):
+        ql = query.lower()
+        for marker, results in self.results_by_marker.items():
+            if marker.lower() in ql:
+                return [dict(r) for r in results]
+        return []
 
     async def close(self):
         pass
@@ -138,13 +152,10 @@ def test_full_pipeline_sweep_report_then_dedup(tmp_path):
     """sweep → both systems persist → report sends + marks reported → sweep
     again is a no-op via dedup."""
 
-    # Temp config tree mirroring config/{domains,cities}/*.yaml
+    # Temp config tree mirroring config/domains/*.yaml (events use Tavily, no config).
     domains_dir = tmp_path / "domains"
-    cities_dir = tmp_path / "cities"
     domains_dir.mkdir()
-    cities_dir.mkdir()
     (domains_dir / "energy_storage.yaml").write_text(DOMAIN_YAML)
-    (cities_dir / "boston.yaml").write_text(CITY_YAML)
 
     async def body():
         store = DataStore(":memory:")
@@ -161,10 +172,9 @@ def test_full_pipeline_sweep_report_then_dedup(tmp_path):
             methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         events = EventsOrchestrator(
-            scraper=scraper, llm=llm, dedup=dedup, store=store,
-            cities=["boston"], config_dir=cities_dir,
-            methods={"rss"}, threshold=6.0, week_window_days=None,
-            future_horizon_days=None,
+            llm=llm, dedup=dedup, store=store,
+            cities=["boston"], threshold=6.0, future_horizon_days=None,
+            tavily_searcher=FakeTavily(EVENT_RESULTS),
         )
         await asyncio.gather(research.run(), events.run())
 
@@ -193,10 +203,9 @@ def test_full_pipeline_sweep_report_then_dedup(tmp_path):
             methods={"rss"}, threshold=6.0, week_window_days=None,
         )
         events2 = EventsOrchestrator(
-            scraper=scraper2, llm=llm2, dedup=dedup, store=store,
-            cities=["boston"], config_dir=cities_dir,
-            methods={"rss"}, threshold=6.0, week_window_days=None,
-            future_horizon_days=None,
+            llm=llm2, dedup=dedup, store=store,
+            cities=["boston"], threshold=6.0, future_horizon_days=None,
+            tavily_searcher=FakeTavily(EVENT_RESULTS),
         )
         await asyncio.gather(research2.run(), events2.run())
 

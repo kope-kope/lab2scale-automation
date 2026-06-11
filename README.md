@@ -166,6 +166,7 @@ Automation/
 │   ├── dedup.py        — content hashing + seen_hashes
 │   ├── scraper.py      — httpx + feedparser + generic article extractor
 │   ├── llm.py          — Anthropic SDK wrapper (Haiku + Sonnet)
+│   ├── prompts.py      — loads editable LLM prompts from prompts/*.md
 │   └── email_sender.py — Resend wrapper
 ├── systems/
 │   ├── base_agent.py                 — shared pipeline + date filter + hooks

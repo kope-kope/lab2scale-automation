@@ -7,6 +7,11 @@ environment so they can be changed without code edits:
 
     LLM_SCORING_MODEL   (default: claude-haiku-4-5)
     LLM_SUMMARY_MODEL   (default: claude-sonnet-4-6)
+
+The prompts themselves live in ``prompts/*.md`` and are loaded via
+``lib.prompts`` — edit those files to change scoring/extraction/summary
+behavior without touching this code. The tool-use JSON schemas below stay in
+code because they're structural API contracts (field types, enums), not prose.
 """
 
 from __future__ import annotations
@@ -15,6 +20,8 @@ import json
 import logging
 import os
 import re
+
+from lib.prompts import load_prompt, render_prompt
 
 log = logging.getLogger("lib.llm")
 
@@ -39,34 +46,10 @@ _MODEL_PRICING = {
 }
 _UNKNOWN_MODEL_PRICING = {"input": 0.0, "output": 0.0}
 
-# --- Prompt templates (verbatim from IMPLEMENTATION_SPEC Section 4.2) --------
-
-SCORING_PROMPT = """You are a research analyst for Lab2Scale, a deep tech commercialization firm.
-Score the following content for relevance to {focus_area} on a scale of 0-10.
-
-Scoring criteria:
-- 9-10: Breakthrough discovery, new prototype, major funding for commercialization-ready tech
-- 7-8: Significant research advance, new startup, notable partnership
-- 5-6: Incremental progress, interesting but not actionable
-- 3-4: Tangentially related, low novelty
-- 0-2: Not relevant to {focus_area}
-
-Content: {content}
-
-Return ONLY a JSON object: {{"score": <float>, "reason": "<one sentence>"}}"""
-
-EXTRACTION_PROMPT = """Extract structured data from this research finding. Return a JSON object with these fields:
-- title: concise title (max 100 chars)
-- summary: 2-3 sentence summary of the finding and why it matters
-- researchers: array of researcher/founder names mentioned
-- affiliation: university, lab, or company name
-- contact_info: any email addresses or contact links found
-- trl_estimate: estimated Technology Readiness Level (e.g. "TRL 2-3")
-- source_type: one of [preprint, journal, news, patent, lab_page, startup]
-
-If a field is not found in the content, use null.
-
-Content: {content}"""
+# Prompts live in prompts/*.md (loaded via lib.prompts):
+#   research_scoring.md, research_extraction.md, event_scoring.md,
+#   event_extraction.md, summary_system.md, summary_user.md
+# The tool_use JSON schemas stay here — they're structural, not prose.
 
 # tool_use schema for structured extraction (forces well-formed output).
 EXTRACTION_TOOL = {
@@ -107,49 +90,8 @@ _NULLISH = {"", "null", "none", "n/a", "na", "unknown", "not found", "not specif
 def _is_nullish(value) -> bool:
     return isinstance(value, str) and value.strip().lower() in _NULLISH
 
-SUMMARY_SYSTEM_PROMPT = (
-    "You are the lead intelligence analyst for Lab2Scale, a deep tech "
-    "commercialization firm. You write very short, high-signal weekly briefs. "
-    "Brevity is a hard requirement — readers scan in 10 seconds."
-)
 
-# --- Event-specific prompts (System 2) --------------------------------------
-
-EVENT_SCORING_PROMPT = """You are an event analyst for Lab2Scale, a deep tech commercialization firm.
-Score the following event for relevance to our focus areas on a scale of 0-10.
-
-Lab2Scale's focus areas:
-- power_generation (fusion, fission, solar, thermoelectrics)
-- energy_storage (batteries, hydrogen, thermal storage)
-- power_electronics (GaN/SiC devices, inverters, converters)
-- semiconductors (advanced packaging, photonics, compound semis)
-- deep_tech_infra (advanced manufacturing, materials science, compute infra)
-
-Scoring criteria (consider both topic relevance AND networking value):
-- 9-10: Major conference or summit on one of our focus areas, high networking value
-- 7-8: Significant workshop, seminar, or meetup directly in our space
-- 5-6: Tangentially relevant — touches our space but not the main focus
-- 3-4: Adjacent topics (general tech, generic VC events)
-- 0-2: Not relevant to deep tech commercialization
-
-Content: {content}
-
-Return ONLY a JSON object: {{"score": <float>, "reason": "<one sentence>"}}"""
-
-EVENT_EXTRACTION_PROMPT = """Extract structured data from this event listing. Return a JSON object with these fields:
-- event_name: concise event name
-- event_date: date in ISO format YYYY-MM-DD if known
-- event_time: time range, e.g. "18:00-20:00"
-- venue: location or platform (e.g. "MIT Media Lab" or "Zoom")
-- description: 2-3 sentence summary of what the event is about
-- cost: e.g. "Free", "$50", "TBD"
-- event_type: one of [conference, seminar, meetup, workshop, demo_day, panel, summit]
-- relevance_tags: array of Lab2Scale focus areas this event touches, from
-  [power_generation, energy_storage, power_electronics, semiconductors, deep_tech_infra]
-
-If a field is not found in the content, use null.
-
-Content: {content}"""
+# --- Event-specific structured-extraction schema (System 2) -----------------
 
 EVENT_EXTRACTION_TOOL = {
     "name": "record_event",
@@ -304,8 +246,10 @@ class LLMFilter:
 
         On API failure, logs and returns 0.0 (the item is then filtered out).
         """
-        prompt = SCORING_PROMPT.format(
-            focus_area=focus_area, content=(content or "")[:_MAX_CONTENT_CHARS]
+        prompt = render_prompt(
+            "research_scoring",
+            focus_area=focus_area,
+            content=(content or "")[:_MAX_CONTENT_CHARS],
         )
         try:
             response = await self.client.messages.create(
@@ -329,7 +273,9 @@ class LLMFilter:
         Returns a dict with all extraction fields present (missing → None / []).
         On API failure, returns an empty-but-shaped dict.
         """
-        prompt = EXTRACTION_PROMPT.format(content=(content or "")[:_MAX_CONTENT_CHARS])
+        prompt = render_prompt(
+            "research_extraction", content=(content or "")[:_MAX_CONTENT_CHARS]
+        )
         try:
             response = await self.client.messages.create(
                 model=self.scoring_model,
@@ -374,7 +320,9 @@ class LLMFilter:
 
         On API failure, logs and returns 0.0 (the item is then filtered out).
         """
-        prompt = EVENT_SCORING_PROMPT.format(content=(content or "")[:_MAX_CONTENT_CHARS])
+        prompt = render_prompt(
+            "event_scoring", content=(content or "")[:_MAX_CONTENT_CHARS]
+        )
         try:
             response = await self.client.messages.create(
                 model=self.scoring_model,
@@ -397,7 +345,9 @@ class LLMFilter:
         Returns a dict with all event fields present (missing → None / []).
         On API failure, returns an empty-but-shaped dict.
         """
-        prompt = EVENT_EXTRACTION_PROMPT.format(content=(content or "")[:_MAX_CONTENT_CHARS])
+        prompt = render_prompt(
+            "event_extraction", content=(content or "")[:_MAX_CONTENT_CHARS]
+        )
         try:
             response = await self.client.messages.create(
                 model=self.scoring_model,
@@ -442,7 +392,7 @@ class LLMFilter:
             response = await self.client.messages.create(
                 model=self.summary_model,
                 max_tokens=4096,
-                system=SUMMARY_SYSTEM_PROMPT,
+                system=load_prompt("summary_system"),
                 messages=[{"role": "user", "content": prompt}],
             )
         except Exception as exc:  # noqa: BLE001
@@ -453,35 +403,29 @@ class LLMFilter:
 
     @staticmethod
     def _build_summary_prompt(findings: list[dict], events: list[dict]) -> str:
-        lines = [
-            "Here is this week's accumulated intelligence for Lab2Scale.",
-            "",
-            f"RESEARCH FINDINGS ({len(findings)}):",
-        ]
+        # The prose/framing lives in prompts/summary_user.md; here we only
+        # serialize the data rows it interpolates. (Row formatting stays in
+        # code because it's tied to the finding/event dict shape.)
+        findings_lines = []
         for f in findings:
             score = f.get("relevance_score")
             score_str = f"{score:.1f}" if isinstance(score, (int, float)) else "n/a"
             affil = f.get("affiliation") or "unknown affiliation"
             summary = (f.get("summary") or "").strip()
-            lines.append(
+            findings_lines.append(
                 f"- [{f.get('focus_area', '?')} | score {score_str}] "
                 f"{f.get('title', 'Untitled')} — {summary} ({affil})"
             )
-        lines += ["", f"UPCOMING EVENTS ({len(events)}):"]
+        events_lines = []
         for e in events:
-            lines.append(
+            events_lines.append(
                 f"- [{e.get('city', '?')} | {e.get('event_date', 'TBD')}] "
                 f"{e.get('event_name', 'Untitled')} — {e.get('venue') or 'venue TBD'}"
             )
-        lines += [
-            "",
-            "Write the executive brief as 2-4 NUMBERED bullet points. Each bullet "
-            "is ONE short sentence, ~15-20 words, leading with the actor (who did "
-            "what). Lead with the most important. Format EXACTLY:",
-            "",
-            "1. Actor did thing.",
-            "2. Other actor did other thing.",
-            "",
-            "Return ONLY the numbered list. No preamble, no headers, no closing line.",
-        ]
-        return "\n".join(lines)
+        return render_prompt(
+            "summary_user",
+            findings_count=len(findings),
+            events_count=len(events),
+            findings_list="\n".join(findings_lines),
+            events_list="\n".join(events_lines),
+        )

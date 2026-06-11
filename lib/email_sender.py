@@ -10,9 +10,23 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 from typing import Any, Callable
 
 log = logging.getLogger("lib.email_sender")
+
+
+def parse_recipients(raw: str | None) -> list[str]:
+    """Split a comma/semicolon-separated string of emails into a clean list.
+
+    Tolerates extra whitespace and trailing separators, e.g.
+    ``"a@x.com, b@x.com; "`` → ``["a@x.com", "b@x.com"]``. Returns ``[]`` for
+    ``None`` or an empty/whitespace string. Used to read ``REPORT_CC`` from the
+    environment so the distribution list can change without a redeploy.
+    """
+    if not raw:
+        return []
+    return [part.strip() for part in re.split(r"[,;]", raw) if part.strip()]
 
 
 class EmailSender:
@@ -40,8 +54,18 @@ class EmailSender:
     def configured(self) -> bool:
         return self._client is not None
 
-    async def send_report(self, html: str, subject: str, to: str | list[str]) -> dict:
-        """Send the report email. Raises if Resend isn't configured."""
+    async def send_report(
+        self,
+        html: str,
+        subject: str,
+        to: str | list[str],
+        cc: str | list[str] | None = None,
+    ) -> dict:
+        """Send the report email. Raises if Resend isn't configured.
+
+        ``cc`` (string or list) adds carbon-copy recipients — omitted from the
+        payload entirely when empty so Resend doesn't see an empty array.
+        """
         if not self.configured:
             raise RuntimeError(
                 "RESEND_API_KEY is not set — set it in .env or inject a client."
@@ -53,7 +77,13 @@ class EmailSender:
             "html": html,
             "reply_to": [self.reply_to] if isinstance(self.reply_to, str) else list(self.reply_to),
         }
-        log.info("Sending report to %s (subject: %s)", params["to"], subject)
+        cc_list = ([cc] if isinstance(cc, str) else list(cc)) if cc else []
+        if cc_list:
+            params["cc"] = cc_list
+        log.info(
+            "Sending report to %s (cc: %s) (subject: %s)",
+            params["to"], cc_list or "-", subject,
+        )
         send_fn: Callable[..., Any] = self._client.Emails.send
         return await asyncio.get_event_loop().run_in_executor(
             None, lambda: send_fn(params)

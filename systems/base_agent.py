@@ -145,8 +145,8 @@ class BaseAgent(ABC):
             for item in value:
                 if not isinstance(item, dict) or not item.get("method"):
                     continue
-                # A source needs a fetchable URL: some configs use `url`, others
-                # put the feed in `rss_url` (e.g. arXiv categories).
+                # A source needs SOMETHING fetchable: most configs use `url`,
+                # some put the feed in `rss_url` (e.g. arXiv).
                 if not (item.get("url") or item.get("rss_url")):
                     continue
                 if self.methods is not None and normalize_method(item["method"]) not in self.methods:
@@ -229,7 +229,7 @@ class BaseAgent(ABC):
                 return []
             items = self.scraper.extract_articles(html, base_url=page_url)
         else:
-            # api method — not built yet.
+            # api (generic) is not built yet.
             self.log.debug("Skipping %s source: %s", method, name)
             return []
         for item in items:

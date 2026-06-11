@@ -44,6 +44,12 @@ def _check_env(command: str, dry_run: bool = False) -> None:
             needs.append(
                 "ANTHROPIC_API_KEY — required for LLM scoring/extraction/summary"
             )
+    if command in ("sweep", "full"):
+        if not os.getenv("TAVILY_API_KEY"):
+            needs.append(
+                "TAVILY_API_KEY — required for System 2 event discovery "
+                "(research still runs without it)"
+            )
     if command in ("report", "full") and not dry_run:
         if not os.getenv("RESEND_API_KEY"):
             needs.append(
@@ -97,11 +103,13 @@ def _print_sweep_summary(result: dict) -> None:
 
 
 def _sweep_methods() -> set[str]:
-    """Which source methods this sweep should fetch.
+    """Which source methods System 1 (research) should fetch.
 
-    Default is ``{"rss"}`` — cost-safe. To include web-scrape sources (which
-    are large in number and can ~triple the per-sweep cost on the first run),
-    set ``SWEEP_METHODS=rss,scrape`` in the environment.
+    Default is ``{"rss"}`` — structured feeds, cheap to fetch and parse.
+    ``scrape`` is opt-in (it can ~triple per-sweep cost on the first run).
+
+    Note: System 2 (events) ignores this — it discovers events via Tavily
+    web search, not feed configs.
     """
     raw = os.getenv("SWEEP_METHODS", "rss")
     methods = {m.strip().lower() for m in raw.split(",") if m.strip()}
@@ -133,8 +141,10 @@ async def sweep() -> None:
     research = ResearchOrchestrator(
         scraper=scraper, llm=llm, dedup=dedup, store=store, methods=methods,
     )
+    # Events discover via Tavily web search (built from TAVILY_API_KEY) — no
+    # shared scraper/methods needed.
     events = EventsOrchestrator(
-        scraper=scraper, llm=llm, dedup=dedup, store=store, methods=methods,
+        llm=llm, dedup=dedup, store=store,
     )
 
     try:

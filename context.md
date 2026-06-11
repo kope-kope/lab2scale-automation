@@ -26,7 +26,8 @@ Read this before deploying — it's the surface area you need to think about.
 ### Email (System 3 / Day 7+)
 | Variable | Default | Notes |
 |---|---|---|
-| `REPORT_RECIPIENT` | `team@lab-2-scale.com` | Where the weekly brief goes. |
+| `REPORT_RECIPIENT` | `team@lab-2-scale.com` | Where the weekly brief goes (primary `to`). |
+| `REPORT_CC` | _(none)_ | Extra CC recipients — comma- or semicolon-separated. Read at send time, so editing it (e.g. in Railway) changes the distribution list with no redeploy. Omitted from the payload when empty. |
 | `REPORT_FROM` | `reports@lab-2-scale.com` | Must be a domain verified in Resend. |
 
 ### LLM models

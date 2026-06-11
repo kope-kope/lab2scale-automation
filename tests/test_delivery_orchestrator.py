@@ -100,6 +100,72 @@ def test_orchestrator_end_to_end_sends_and_marks_reported():
     assert log_row["status"] == "sent"
 
 
+def test_report_ccs_explicit_addresses():
+    """An explicit cc list reaches the Resend payload."""
+    async def body():
+        store = await _seeded_store()
+        client = FakeResendClient()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=client),
+            recipient="team@example.com",
+            cc=["lead@example.com", "partner@example.com"],
+        )
+        result = await orch.run()
+        return result, client.Emails.sent[0]
+
+    result, sent = asyncio.run(body())
+    assert result["cc"] == ["lead@example.com", "partner@example.com"]
+    assert sent["to"] == ["team@example.com"]
+    assert sent["cc"] == ["lead@example.com", "partner@example.com"]
+
+
+def test_report_cc_from_env_var(monkeypatch):
+    """REPORT_CC (comma/semicolon list) configures cc without code changes."""
+    monkeypatch.setenv("REPORT_CC", "a@example.com, b@example.com")
+
+    async def body():
+        store = await _seeded_store()
+        client = FakeResendClient()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=client),
+            recipient="team@example.com",
+            # cc omitted → picked up from REPORT_CC
+        )
+        await orch.run()
+        return client.Emails.sent[0]
+
+    sent = asyncio.run(body())
+    assert sent["cc"] == ["a@example.com", "b@example.com"]
+
+
+def test_no_cc_when_unset(monkeypatch):
+    """No cc arg and no REPORT_CC → payload carries no cc."""
+    monkeypatch.delenv("REPORT_CC", raising=False)
+
+    async def body():
+        store = await _seeded_store()
+        client = FakeResendClient()
+        llm = FakeLLM()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=client),
+            recipient="team@example.com",
+        )
+        result = await orch.run()
+        return result, client.Emails.sent[0]
+
+    result, sent = asyncio.run(body())
+    assert result["cc"] == []
+    assert "cc" not in sent
+
+
 def test_dry_run_writes_html_and_marks_reported():
     """Dry-run still marks items reported (preview = published from our POV)."""
     async def body():

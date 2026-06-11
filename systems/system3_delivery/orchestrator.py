@@ -16,7 +16,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from lib.data_store import DataStore, db_path_from_url
-from lib.email_sender import EmailSender
+from lib.email_sender import EmailSender, parse_recipients
 from lib.llm import LLMFilter
 from systems.system3_delivery.summarizer import ReportSummarizer
 
@@ -38,6 +38,7 @@ class DeliveryOrchestrator:
         summarizer: ReportSummarizer | None = None,
         *,
         recipient: str | None = None,
+        cc: list[str] | str | None = None,
         template_dir: str | Path | None = None,
         template_name: str = DEFAULT_TEMPLATE_NAME,
     ):
@@ -52,6 +53,15 @@ class DeliveryOrchestrator:
         self.recipient = recipient or os.getenv(
             "REPORT_RECIPIENT", "team@lab-2-scale.com"
         )
+        # Carbon-copy recipients, configurable at runtime via REPORT_CC
+        # (comma/semicolon-separated) — change the distribution list without a
+        # redeploy. An explicit `cc` arg (incl. []) overrides the env var.
+        if cc is None:
+            self.cc = parse_recipients(os.getenv("REPORT_CC"))
+        elif isinstance(cc, str):
+            self.cc = parse_recipients(cc)
+        else:
+            self.cc = list(cc)
         env = Environment(
             loader=FileSystemLoader(str(template_dir or DEFAULT_TEMPLATE_DIR)),
             autoescape=select_autoescape(["html", "xml"]),
@@ -91,7 +101,9 @@ class DeliveryOrchestrator:
             log.info("Dry run — HTML written to %s", FALLBACK_REPORT_PATH)
         else:
             try:
-                await self.email_sender.send_report(html, subject, self.recipient)
+                await self.email_sender.send_report(
+                    html, subject, self.recipient, cc=self.cc
+                )
                 sent = True
             except Exception as exc:  # noqa: BLE001 — never crash the cron
                 error_message = repr(exc)
@@ -130,6 +142,7 @@ class DeliveryOrchestrator:
             "status": status,
             "is_empty": is_empty,
             "recipient": self.recipient,
+            "cc": self.cc,
             "subject": subject,
             "html_path": str(FALLBACK_REPORT_PATH) if (dry_run or not sent) else None,
         }

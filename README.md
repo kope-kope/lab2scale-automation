@@ -78,7 +78,8 @@ included items as reported — preview = published, from the system's POV.
 | `DATABASE_URL` | `sqlite:///...` or `postgresql://...` | `sqlite:///data/lab2scale.db` |
 | `LLM_SCORING_MODEL` | Haiku model for scoring + extraction | `claude-haiku-4-5` |
 | `LLM_SUMMARY_MODEL` | Sonnet model for the weekly summary | `claude-sonnet-4-6` |
-| `REPORT_RECIPIENT` | Where the brief goes | `team@lab-2-scale.com` |
+| `REPORT_RECIPIENT` | Where the brief goes (primary `to`) | `team@lab-2-scale.com` |
+| `REPORT_CC` | Extra CC recipients, comma/semicolon list — change anytime, no redeploy | _(none)_ |
 | `REPORT_FROM` | Verified Resend sender | `reports@lab-2-scale.com` |
 | `LOG_LEVEL` | Standard Python log level | `INFO` |
 

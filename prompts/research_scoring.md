@@ -11,6 +11,12 @@ Score bands:
 
 Judge substance over hype. Push the score DOWN for: marketing announcements and sponsored posts, listicles and "top N" roundups, generic industry commentary, re-reported or duplicate news, and anything about a different field (even if impressive). Reward specific results, named people/organizations, and a clear path to commercialization.
 
+Calibration examples (these set where the line falls):
+- On-topic, a startup raises $40M to commercialize its core technology with a pilot line already running → 8.5 (funded + working tech + clear path to market).
+- On-topic, a university lab reports a strong new result in a paper, lab-scale only, no company or funding yet → 7.0 (a real advance, but not yet actionable).
+- On-topic but incremental — a small efficiency gain repeating known methods → 5.0.
+- A sponsored "top 10 trends to watch in 2026" post, or news about an unrelated field → 1.0.
+
 Content to score:
 {{CONTENT}}
 

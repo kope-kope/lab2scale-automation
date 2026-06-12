@@ -16,6 +16,13 @@ Score the event below from 0 to 10 on BOTH topic fit and networking value:
 
 Score the event itself, not its location. Push the score DOWN for generic webinars, vendor sales pitches, course advertisements, and recycled or duplicate listings.
 
+Calibration examples (these set where the line falls):
+- An annual summit on a focus area, multi-day, with founders, researchers, and investors attending → 8.5 (major, on-topic, high networking value).
+- A focused evening seminar or demo day squarely in our space → 7.5.
+- A monthly clean-energy networking mixer at a coworking space → 6.0 (on-topic but small and low-signal).
+- A free webinar that is really a product demo, or a paid online short course → 3.0.
+- A general-audience or unrelated event (food, music, generic business) → 0-1.
+
 Event:
 {{CONTENT}}
 

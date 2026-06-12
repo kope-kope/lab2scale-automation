@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 from lib import llm
 from lib.llm import LLMFilter
+from lib.prompts import load_prompt
 
 
 # ----- fake Anthropic client ----------------------------------------------
@@ -184,7 +185,7 @@ def test_generate_weekly_summary_uses_summary_model_and_returns_text():
 
     call = client.messages.calls[0]
     assert call["model"] == "claude-sonnet-4-6"
-    assert call["system"] == llm.SUMMARY_SYSTEM_PROMPT
+    assert call["system"] == load_prompt("summary_system")
     prompt = call["messages"][0]["content"]
     assert "RESEARCH FINDINGS (1)" in prompt
     assert "UPCOMING EVENTS (1)" in prompt

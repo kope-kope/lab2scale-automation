@@ -8,8 +8,8 @@ effect on the next run (each cron run is a fresh process).
 
 | File | Used by | What it controls |
 |---|---|---|
-| `research_scoring.md` | `score_relevance` (Haiku) | How research papers/news are scored 0–10 for a focus area. |
-| `research_extraction.md` | `extract_structured_data` (Haiku) | What fields to pull from a research finding. |
+| `research_scoring.md` | `score_relevance` (Haiku) | Scores research/news 0–10 as a **VC deal-flow scout** — investable teams, spin-outs, funding/M&A, breakthroughs with named people (early is good). |
+| `research_extraction.md` | `extract_structured_data` (Haiku) | Pulls fields from a finding, framed as deal flow — the named people are the targets to reach. |
 | `event_scoring.md` | `score_event_relevance` (Haiku) | How events are scored 0–10 for our focus areas. |
 | `event_extraction.md` | `extract_event_data` (Haiku) | What fields to pull from an event listing. |
 | `summary_system.md` | `generate_weekly_summary` (Sonnet) | The analyst persona/voice for the weekly brief. |

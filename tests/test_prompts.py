@@ -40,7 +40,8 @@ def test_render_substitutes_placeholders():
 def test_render_keeps_json_and_dollar_signs_literal():
     """JSON examples and $ amounts must survive untouched (no escaping needed)."""
     scoring = render_prompt("research_scoring", focus_area="x", content="y")
-    assert '{"score":' in scoring          # JSON example intact
+    assert '"score":' in scoring            # JSON score field intact
+    assert '"reason":' in scoring           # reason-first format intact
     event_extract = render_prompt("event_extraction", content="z")
     assert "$50" in event_extract          # dollar amount intact
 

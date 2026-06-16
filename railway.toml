@@ -4,12 +4,12 @@
 # connect this GitHub repo — no extra config needed here.
 #
 # This file describes the build (Dockerfile) + the default cron service:
-#   - Weekly, runs `python main.py full` (sweep + report in one shot)
-#   - Schedule: Monday 14:00 UTC = 9:00am ET (Lab2Scale's report time)
+#   - Daily, runs `python main.py full` (sweep + report in one shot)
+#   - Schedule: every day 14:00 UTC = 9:00am ET (Lab2Scale's report time)
 #
-# For 3x-daily sweeps with a separate weekly report (the spec's intended
-# production cadence), see README §Deployment — that path requires
-# Postgres + a second cron service.
+# Cadence note: we run daily (not weekly) to iterate faster on prompt/source
+# quality while the system is young — a daily brief surfaces issues sooner.
+# Dial back to weekly later by changing the cron to `0 14 * * 1` (Mondays).
 
 [build]
 builder = "DOCKERFILE"
@@ -17,6 +17,6 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "python main.py full"
-cronSchedule = "0 14 * * 1"           # Monday 14:00 UTC (9am ET)
+cronSchedule = "0 14 * * *"           # Every day 14:00 UTC (9am ET)
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3

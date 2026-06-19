@@ -138,8 +138,14 @@ async def sweep() -> None:
     llm = LLMFilter()
     dedup = Deduplicator(store)
 
+    # Daily cadence: a 24h RSS window (RESEARCH_WINDOW_DAYS) keeps each run's
+    # feed slice fresh and non-overlapping. The web-search path (built from
+    # TAVILY_API_KEY) adds deal-flow richness, bounded by RESEARCH_SEARCH_TIME_RANGE.
     research = ResearchOrchestrator(
         scraper=scraper, llm=llm, dedup=dedup, store=store, methods=methods,
+        week_window_days=int(os.getenv("RESEARCH_WINDOW_DAYS", "1")),
+        search_threshold=float(os.getenv("RESEARCH_SEARCH_THRESHOLD", "6.0")),
+        search_time_range=os.getenv("RESEARCH_SEARCH_TIME_RANGE", "week"),
     )
     # Events discover via Tavily web search (built from TAVILY_API_KEY) — no
     # shared scraper/methods needed.

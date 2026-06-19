@@ -41,6 +41,19 @@ class FakeLLM:
         }
 
 
+class FakeTavily:
+    """Returns the same results for every search query."""
+
+    def __init__(self, results):
+        self.results = results
+
+    async def search(self, query, max_results=None, *, time_range=None, topic=None):
+        return [dict(r) for r in self.results]
+
+    async def close(self):
+        pass
+
+
 def _write_domain(config_dir, name, feed_url):
     (config_dir / f"{name}.yaml").write_text(
         "arxiv:\n"
@@ -95,6 +108,44 @@ def test_orchestrator_runs_all_domains_and_aggregates(tmp_path):
 
     assert len(findings) == 2
     assert {f["focus_area"] for f in findings} == {"energy_storage", "semiconductors"}
+
+
+def test_orchestrator_merges_rss_and_web_search(tmp_path):
+    """When a Tavily searcher is present, each domain runs both its RSS agent
+    and its web-search agent, and their findings/stats merge per domain."""
+    async def body():
+        _write_domain(tmp_path, "energy_storage", "https://ex.com/es.rss")
+        feeds = {
+            "https://ex.com/es.rss": [
+                {"title": "Solid-state battery", "link": "https://ex.com/es1",
+                 "summary": "great", "published": "2026-05-25"},
+            ],
+        }
+        # Web-search returns a different story (distinct URL + title).
+        search_results = [
+            {"url": "https://web.com/spinout", "title": "Battery spin-out breakthrough",
+             "content": "Battery spin-out breakthrough with a named team", "score": 0.9},
+        ]
+        scores = {"Solid-state battery": 9.0, "Battery spin-out breakthrough": 8.5}
+        store = await _fresh_store()
+        orch = ResearchOrchestrator(
+            scraper=FakeScraper(feeds), llm=FakeLLM(scores),
+            dedup=Deduplicator(store), store=store,
+            domains=["energy_storage"], config_dir=tmp_path,
+            methods={"rss"}, threshold=6.0, week_window_days=None,
+            search_threshold=6.0, tavily_searcher=FakeTavily(search_results),
+        )
+        result = await orch.run()
+        findings = await store.get_unreported_findings()
+        await store.close()
+        return result, findings
+
+    result, findings = asyncio.run(body())
+    # One finding from RSS + one from web search, merged into the domain.
+    assert result["domains"]["energy_storage"]["new_items"] == 2
+    assert len(findings) == 2
+    agents = {f["agent"] for f in findings}
+    assert agents == {"energy_storage_agent", "energy_storage_search_agent"}
 
 
 def test_orchestrator_isolates_a_failing_domain(tmp_path):

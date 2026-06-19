@@ -57,27 +57,41 @@ class TavilySearcher:
         self.include_raw_content = include_raw_content
         self._client = httpx.AsyncClient(timeout=timeout)
 
-    async def search(self, query: str, max_results: int | None = None) -> list[dict]:
+    async def search(
+        self,
+        query: str,
+        max_results: int | None = None,
+        *,
+        time_range: str | None = None,
+        topic: str | None = None,
+    ) -> list[dict]:
         """Run a search and return a list of result dicts.
 
         Each result contains at minimum: ``url``, ``title``, ``content``
         (snippet), ``score``. Returns an empty list on any API error so the
         caller can continue gracefully.
+
+        ``time_range`` ("day" | "week" | "month" | "year") bounds results to
+        recently-published pages — used by research search for fresh daily
+        deal flow. ``topic`` ("general" | "news") biases the index. Both are
+        omitted from the payload when None (default Tavily behavior).
         """
         n = max_results if max_results is not None else self.max_results
+        payload = {
+            "api_key": self.api_key,
+            "query": query,
+            "search_depth": self.search_depth,
+            "max_results": n,
+            "include_answer": False,
+            "include_images": False,
+            "include_raw_content": self.include_raw_content,
+        }
+        if time_range:
+            payload["time_range"] = time_range
+        if topic:
+            payload["topic"] = topic
         try:
-            resp = await self._client.post(
-                _BASE_URL,
-                json={
-                    "api_key": self.api_key,
-                    "query": query,
-                    "search_depth": self.search_depth,
-                    "max_results": n,
-                    "include_answer": False,
-                    "include_images": False,
-                    "include_raw_content": self.include_raw_content,
-                },
-            )
+            resp = await self._client.post(_BASE_URL, json=payload)
             resp.raise_for_status()
             results = resp.json().get("results", [])
             log.debug("Tavily '%s' → %d results", query[:70], len(results))

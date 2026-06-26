@@ -27,26 +27,31 @@ from lib.tavily_searcher import TavilySearcher
 # A few deal-flow query angles per focus area. Each is sent to Tavily as its
 # own search, so 2 fragments × 5 focus areas = 10 research searches per sweep.
 # Keys MUST match the System 1 focus-area names (config/domains/*.yaml stems).
+# Lab2Scale is a deep tech commercialization platform; these queries hunt for
+# EARLY-STAGE COMPANIES, FOUNDERS, and SPIN-OUTS we could take into the Incubator
+# (not research papers or investments). Each focus area gets two angles: one
+# weighted to our ecosystem (MIT/Boston > Stanford/Berkeley/national labs), one
+# broad-US. Keys MUST match the System 1 sector names (config/domains/*.yaml stems).
 DOMAIN_SEARCH_QUERIES: dict[str, list[str]] = {
-    "power_generation": [
-        "power generation fusion nuclear solar geothermal breakthrough new technology startup",
-        "power generation company commercializing new technology pilot OR prototype OR deployment OR partnership",
+    "nuclear_advanced_energy": [
+        "early-stage nuclear SMR OR advanced fission OR fusion startup OR spin-out founder pre-seed OR seed",
+        "MIT OR national lab clean firm power OR advanced nuclear spin-out new company prototype",
     ],
-    "energy_storage": [
-        "energy storage battery grid-storage breakthrough new technology startup OR spin-out",
-        "battery or long-duration storage company commercializing technology pilot OR prototype OR deployment",
+    "water_cooling": [
+        "atmospheric water generation OR datacenter cooling OR waste-heat startup OR spin-out founder pre-seed OR seed",
+        "early-stage water-energy nexus OR liquid cooling technology company new prototype OR pilot",
     ],
     "power_electronics": [
-        "power electronics GaN SiC wide-bandgap breakthrough new technology startup OR spin-out",
-        "inverter or converter power-electronics company commercializing technology prototype OR partnership",
+        "GaN OR SiC OR wide-bandgap power electronics startup OR spin-out founder pre-seed OR seed",
+        "MIT OR Stanford power electronics OR power conversion spin-out new company prototype",
     ],
-    "semiconductors": [
-        "semiconductor chip photonics advanced-packaging breakthrough new technology startup OR spin-out",
-        "compound-semiconductor or chip company commercializing new technology prototype OR deployment",
+    "autonomous_systems": [
+        "autonomous vehicle safety OR defense ground robotics OR industrial autonomy startup OR spin-out founder",
+        "early-stage deterministic control OR autonomy software company pre-seed OR seed new prototype",
     ],
-    "deep_tech_infra": [
-        "deep tech hard tech advanced manufacturing breakthrough new technology startup OR spin-out",
-        "materials-science or compute-infrastructure company commercializing technology prototype OR deployment",
+    "advanced_manufacturing": [
+        "advanced manufacturing AI process OR roll-to-roll OR hardware scale-up startup OR spin-out founder",
+        "MIT OR national lab advanced manufacturing OR materials spin-out new company pre-seed OR seed",
     ],
 }
 

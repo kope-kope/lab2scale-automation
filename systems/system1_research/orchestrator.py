@@ -34,12 +34,13 @@ _AGGREGATE_KEYS = (
 class ResearchOrchestrator:
     """Spins up all domain agents in parallel."""
 
+    # Lab2Scale's five active sectors (Operating Memo §5).
     DOMAINS = [
-        "power_generation",
-        "energy_storage",
+        "nuclear_advanced_energy",
+        "water_cooling",
         "power_electronics",
-        "semiconductors",
-        "deep_tech_infra",
+        "autonomous_systems",
+        "advanced_manufacturing",
     ]
 
     def __init__(

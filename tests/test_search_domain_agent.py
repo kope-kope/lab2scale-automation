@@ -9,7 +9,7 @@ from systems.system1_research.search_domain_agent import (
     SearchDomainAgent,
 )
 
-N_QUERIES = len(DOMAIN_SEARCH_QUERIES["energy_storage"])
+N_QUERIES = len(DOMAIN_SEARCH_QUERIES["power_electronics"])
 
 
 class FakeTavily:
@@ -63,7 +63,7 @@ async def _fresh_store() -> DataStore:
 
 def _agent(store, searcher, llm, **kw):
     return SearchDomainAgent(
-        "energy_storage", searcher, llm, Deduplicator(store), store,
+        "power_electronics", searcher, llm, Deduplicator(store), store,
         threshold=kw.pop("threshold", 8.0), **kw,
     )
 
@@ -88,8 +88,8 @@ def test_dedups_overlapping_urls_across_queries():
     assert llm.score_calls == 1                   # dedup happened before scoring
     assert llm.extract_calls == 1
     assert len(findings) == 1
-    assert findings[0]["focus_area"] == "energy_storage"
-    assert findings[0]["agent"] == "energy_storage_search_agent"
+    assert findings[0]["focus_area"] == "power_electronics"
+    assert findings[0]["agent"] == "power_electronics_search_agent"
 
 
 def test_below_threshold_is_filtered():
@@ -144,11 +144,11 @@ def test_dedups_across_reruns():
     async def body():
         store = await _fresh_store()
         dedup = Deduplicator(store)
-        a1 = SearchDomainAgent("energy_storage", FakeTavily(results),
+        a1 = SearchDomainAgent("power_electronics", FakeTavily(results),
                                FakeResearchLLM(scores), dedup, store, threshold=8.0)
         first = await a1.run()
         llm2 = FakeResearchLLM(scores)
-        a2 = SearchDomainAgent("energy_storage", FakeTavily(results),
+        a2 = SearchDomainAgent("power_electronics", FakeTavily(results),
                                llm2, dedup, store, threshold=8.0)
         second = await a2.run()
         await store.close()

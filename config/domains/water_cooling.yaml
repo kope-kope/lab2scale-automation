@@ -1,0 +1,26 @@
+# =============================================================================
+# Water & Cooling — Research/Company Monitoring (lean source list)
+# Topics: atmospheric water generation, waste-heat recovery, datacenter cooling,
+#          cooling system innovation, the water / energy nexus for datacenters.
+# The Tavily web-search path (DOMAIN_SEARCH_QUERIES) is the primary deal-flow
+# engine for this sector; these feeds are a thin RSS backstop.
+# =============================================================================
+
+news_trade:
+  - name: "Data Center Frontier"
+    url: "https://www.datacenterfrontier.com/"
+    rss_url: "https://www.datacenterfrontier.com/feed/"
+    method: rss
+    notes: "Datacenter infrastructure incl. cooling and water/energy nexus."
+
+  - name: "Data Center Dynamics"
+    url: "https://www.datacenterdynamics.com/en/"
+    method: web_scrape
+    notes: "Global datacenter news; filter for cooling / water."
+
+arxiv:
+  - name: "arXiv physics.app-ph - Applied Physics"
+    url: "https://arxiv.org/list/physics.app-ph/recent"
+    rss_url: "https://rss.arxiv.org/rss/physics.app-ph"
+    method: rss
+    notes: "Thermal/fluid/materials work relevant to cooling and water capture."

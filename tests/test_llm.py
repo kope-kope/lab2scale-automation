@@ -187,7 +187,7 @@ def test_generate_weekly_summary_uses_summary_model_and_returns_text():
     assert call["model"] == "claude-sonnet-4-6"
     assert call["system"] == load_prompt("summary_system")
     prompt = call["messages"][0]["content"]
-    assert "RESEARCH FINDINGS (1)" in prompt
+    assert "CANDIDATE COMPANIES / FOUNDERS (1)" in prompt
     assert "UPCOMING EVENTS (1)" in prompt
     assert "MIT Energy Night" in prompt
 

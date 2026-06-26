@@ -114,24 +114,24 @@ def test_orchestrator_merges_rss_and_web_search(tmp_path):
     """When a Tavily searcher is present, each domain runs both its RSS agent
     and its web-search agent, and their findings/stats merge per domain."""
     async def body():
-        _write_domain(tmp_path, "energy_storage", "https://ex.com/es.rss")
+        _write_domain(tmp_path, "power_electronics", "https://ex.com/pe.rss")
         feeds = {
-            "https://ex.com/es.rss": [
-                {"title": "Solid-state battery", "link": "https://ex.com/es1",
+            "https://ex.com/pe.rss": [
+                {"title": "GaN inverter advance", "link": "https://ex.com/pe1",
                  "summary": "great", "published": "2026-05-25"},
             ],
         }
         # Web-search returns a different story (distinct URL + title).
         search_results = [
-            {"url": "https://web.com/spinout", "title": "Battery spin-out breakthrough",
-             "content": "Battery spin-out breakthrough with a named team", "score": 0.9},
+            {"url": "https://web.com/spinout", "title": "SiC power spin-out",
+             "content": "SiC power spin-out with a named team", "score": 0.9},
         ]
-        scores = {"Solid-state battery": 9.0, "Battery spin-out breakthrough": 8.5}
+        scores = {"GaN inverter advance": 9.0, "SiC power spin-out": 8.5}
         store = await _fresh_store()
         orch = ResearchOrchestrator(
             scraper=FakeScraper(feeds), llm=FakeLLM(scores),
             dedup=Deduplicator(store), store=store,
-            domains=["energy_storage"], config_dir=tmp_path,
+            domains=["power_electronics"], config_dir=tmp_path,
             methods={"rss"}, threshold=6.0, week_window_days=None,
             search_threshold=6.0, tavily_searcher=FakeTavily(search_results),
         )
@@ -142,10 +142,10 @@ def test_orchestrator_merges_rss_and_web_search(tmp_path):
 
     result, findings = asyncio.run(body())
     # One finding from RSS + one from web search, merged into the domain.
-    assert result["domains"]["energy_storage"]["new_items"] == 2
+    assert result["domains"]["power_electronics"]["new_items"] == 2
     assert len(findings) == 2
     agents = {f["agent"] for f in findings}
-    assert agents == {"energy_storage_agent", "energy_storage_search_agent"}
+    assert agents == {"power_electronics_agent", "power_electronics_search_agent"}
 
 
 def test_orchestrator_isolates_a_failing_domain(tmp_path):

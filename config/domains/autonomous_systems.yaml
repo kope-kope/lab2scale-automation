@@ -1,0 +1,27 @@
+# =============================================================================
+# Autonomous Systems — Research/Company Monitoring (lean source list)
+# Topics: deterministic control systems, autonomous-vehicle safety, defense
+#          ground robotics, industrial autonomy.
+# The Tavily web-search path (DOMAIN_SEARCH_QUERIES) is the primary deal-flow
+# engine for this sector; these feeds are a thin RSS backstop.
+# =============================================================================
+
+news_trade:
+  - name: "The Robot Report"
+    url: "https://www.therobotreport.com/"
+    rss_url: "https://www.therobotreport.com/feed/"
+    method: rss
+    notes: "Robotics + autonomy industry news, funding, company launches."
+
+arxiv:
+  - name: "arXiv cs.RO - Robotics"
+    url: "https://arxiv.org/list/cs.RO/recent"
+    rss_url: "https://rss.arxiv.org/rss/cs.RO"
+    method: rss
+    notes: "Robotics + autonomy research; watch for teams forming companies."
+
+  - name: "arXiv eess.SY - Systems and Control"
+    url: "https://arxiv.org/list/eess.SY/recent"
+    rss_url: "https://rss.arxiv.org/rss/eess.SY"
+    method: rss
+    notes: "Deterministic control, safety, planning for autonomous systems."

@@ -161,6 +161,44 @@ def test_dedups_across_reruns():
     assert llm2.score_calls == 0       # dedup short-circuits before scoring
 
 
+def test_enriches_contacts_when_extraction_finds_no_founders():
+    """If extraction names no founders, a follow-up search fills in who to reach."""
+    results = [{"url": "https://ex.com/co", "title": "Ferveret cooling",
+                "content": "Ferveret — cooling for data centers", "score": 0.9}]
+
+    class NoFounderThenFounderLLM:
+        def __init__(self):
+            self.extract_calls = 0
+
+        async def score_relevance(self, content, focus_area):
+            return 9.0
+
+        async def extract_structured_data(self, content, focus_area):
+            self.extract_calls += 1
+            if self.extract_calls == 1:               # original: company, no founders
+                return {"title": "Ferveret", "summary": "cooling startup",
+                        "researchers": [], "affiliation": "Ferveret",
+                        "contact_info": None, "trl_estimate": "TRL 4",
+                        "source_type": "startup"}
+            return {"title": None, "summary": None,    # enrichment: founders found
+                    "researchers": ["Dr. Jane Founder"], "affiliation": None,
+                    "contact_info": None, "trl_estimate": None, "source_type": None}
+
+    async def body():
+        store = await _fresh_store()
+        llm = NoFounderThenFounderLLM()
+        agent = _agent(store, FakeTavily(results), llm)
+        await agent.run()
+        findings = await store.get_unreported_findings()
+        await store.close()
+        return findings, llm
+
+    findings, llm = asyncio.run(body())
+    assert len(findings) == 1
+    assert findings[0]["researchers"] == ["Dr. Jane Founder"]
+    assert llm.extract_calls == 2  # original extraction + one enrichment
+
+
 def test_passes_time_range_to_searcher():
     results = [{"url": "https://ex.com/1", "title": "X", "content": "X", "score": 0.1}]
 

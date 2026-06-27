@@ -24,26 +24,30 @@ from systems.base_agent import _parse_date_string
 # full Tavily query. Keep these tight — Tavily's snippet quality degrades with
 # very long queries.
 
+# Lab2Scale's five active sectors (Operating Memo §5). Each query hunts events
+# where early-stage founders and companies in the sector show up — conferences,
+# summits, demo days, pitch nights — so the team can meet deal flow (and find
+# Insights speaking slots).
 DOMAIN_QUERIES: dict[str, str] = {
-    "power_generation": (
-        "power generation nuclear fusion hydrogen solar energy "
-        "conference seminar workshop event"
+    "nuclear_advanced_energy": (
+        "nuclear SMR advanced energy fusion startup founder "
+        "conference OR summit OR demo day"
     ),
-    "energy_storage": (
-        "energy storage battery grid storage cleantech "
-        "conference seminar workshop event"
+    "water_cooling": (
+        "datacenter cooling atmospheric water waste-heat startup founder "
+        "conference OR summit OR meetup"
     ),
     "power_electronics": (
-        "power electronics GaN SiC wide-bandgap inverter "
-        "conference seminar workshop event"
+        "power electronics GaN SiC wide-bandgap startup founder "
+        "conference OR summit OR workshop"
     ),
-    "semiconductors": (
-        "semiconductor chip photonics advanced manufacturing MEMS "
-        "conference seminar workshop event"
+    "autonomous_systems": (
+        "autonomous systems robotics AV defense autonomy startup founder "
+        "conference OR summit OR demo day"
     ),
-    "deep_tech_infrastructure": (
-        "deep tech hard tech startup incubator accelerator demo day pitch "
-        "conference event"
+    "advanced_manufacturing": (
+        "advanced manufacturing hard tech materials startup founder "
+        "demo day OR pitch OR conference"
     ),
 }
 

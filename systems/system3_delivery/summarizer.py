@@ -34,20 +34,21 @@ def parse_bullets(text: str) -> list[str]:
     return bullets
 
 # Human labels and subtle color accents used by the template.
+# Lab2Scale's five active sectors (Operating Memo §5).
 FOCUS_LABELS = {
-    "power_generation": "⚡ Power Generation",
-    "energy_storage": "🔋 Energy Storage",
+    "nuclear_advanced_energy": "⚛️ Nuclear & Advanced Energy",
+    "water_cooling": "💧 Water & Cooling",
     "power_electronics": "🔌 Power Electronics",
-    "semiconductors": "🧬 Semiconductors",
-    "deep_tech_infra": "🏗️ Deep Tech Infrastructure",
+    "autonomous_systems": "🤖 Autonomous Systems",
+    "advanced_manufacturing": "🏭 Advanced Manufacturing",
 }
 
 FOCUS_PALETTE = {
-    "power_generation": "#0ea5e9",   # sky
-    "energy_storage": "#10b981",      # emerald
-    "power_electronics": "#a855f7",   # purple
-    "semiconductors": "#f59e0b",      # amber
-    "deep_tech_infra": "#ef4444",     # red
+    "nuclear_advanced_energy": "#0ea5e9",   # sky
+    "water_cooling": "#06b6d4",              # cyan
+    "power_electronics": "#a855f7",          # purple
+    "autonomous_systems": "#f59e0b",         # amber
+    "advanced_manufacturing": "#ef4444",     # red
 }
 
 CITY_LABELS = {

@@ -32,26 +32,34 @@ from lib.tavily_searcher import TavilySearcher
 # (not research papers or investments). Each focus area gets two angles: one
 # weighted to our ecosystem (MIT/Boston > Stanford/Berkeley/national labs), one
 # broad-US. Keys MUST match the System 1 sector names (config/domains/*.yaml stems).
+# Three angles per sector: (1) ecosystem-weighted spin-outs/founders, (2) broad-US
+# early companies, (3) freshest deal-flow signal — recently funded / accelerator
+# cohort / grant-awarded early teams. Keys MUST match the System 1 sector names.
 DOMAIN_SEARCH_QUERIES: dict[str, list[str]] = {
     "nuclear_advanced_energy": [
         "early-stage nuclear SMR OR advanced fission OR fusion startup OR spin-out founder pre-seed OR seed",
         "MIT OR national lab clean firm power OR advanced nuclear spin-out new company prototype",
+        "nuclear OR SMR OR advanced energy startup raised pre-seed OR seed OR DOE OR ARPA-E grant OR accelerator cohort",
     ],
     "water_cooling": [
         "atmospheric water generation OR datacenter cooling OR waste-heat startup OR spin-out founder pre-seed OR seed",
         "early-stage water-energy nexus OR liquid cooling technology company new prototype OR pilot",
+        "datacenter cooling OR water technology startup raised pre-seed OR seed OR grant OR accelerator cohort",
     ],
     "power_electronics": [
         "GaN OR SiC OR wide-bandgap power electronics startup OR spin-out founder pre-seed OR seed",
         "MIT OR Stanford power electronics OR power conversion spin-out new company prototype",
+        "GaN OR SiC OR power electronics startup raised pre-seed OR seed OR grant OR YC OR accelerator cohort",
     ],
     "autonomous_systems": [
         "autonomous vehicle safety OR defense ground robotics OR industrial autonomy startup OR spin-out founder",
         "early-stage deterministic control OR autonomy software company pre-seed OR seed new prototype",
+        "autonomy OR robotics OR autonomous vehicle startup raised pre-seed OR seed OR DARPA OR accelerator cohort",
     ],
     "advanced_manufacturing": [
         "advanced manufacturing AI process OR roll-to-roll OR hardware scale-up startup OR spin-out founder",
         "MIT OR national lab advanced manufacturing OR materials spin-out new company pre-seed OR seed",
+        "advanced manufacturing OR hardware OR materials startup raised pre-seed OR seed OR grant OR accelerator cohort",
     ],
 }
 
@@ -205,6 +213,12 @@ class SearchDomainAgent:
                 await self._mark_seen(item["_hash"])
                 continue
 
+            # Notable contacts: if extraction named no founders, run one
+            # follow-up search to find who to reach out to.
+            researchers = data.get("researchers") or []
+            if not researchers:
+                researchers = await self._enrich_contacts(data.get("affiliation") or title)
+
             record = {
                 "id": item["_hash"],
                 "system": "research",
@@ -213,7 +227,7 @@ class SearchDomainAgent:
                 "title": title,
                 "summary": data.get("summary") or (item.get("content") or "")[:500],
                 "relevance_score": item["_score"],
-                "researchers": data.get("researchers") or [],
+                "researchers": researchers,
                 "affiliation": data.get("affiliation"),
                 "contact_info": data.get("contact_info"),
                 "source_url": item.get("url"),
@@ -235,6 +249,35 @@ class SearchDomainAgent:
                 errors += 1
         self.log.info("Saved %d new findings (%d duplicates, %d errors)", saved, skipped, errors)
         return saved, skipped, errors
+
+    async def _enrich_contacts(self, company: str) -> list[str]:
+        """When extraction named no founders, run ONE follow-up search to find
+        who to reach out to. Returns a list of names (possibly empty). Best
+        effort — any failure just yields no contacts, never breaks the run."""
+        company = (company or "").strip()
+        if not company:
+            return []
+        try:
+            results = await self.searcher.search(
+                f"{company} founders OR co-founder OR CEO", max_results=3
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.log.warning("contact enrichment search failed for %s: %s", company, exc)
+            return []
+        text = "\n\n".join(
+            f"{r.get('title', '')} {r.get('content', '')}" for r in (results or [])
+        ).strip()[:_EXTRACT_CHARS]
+        if not text:
+            return []
+        try:
+            data = await self.llm.extract_structured_data(text, self.focus_area)
+            names = data.get("researchers") or []
+            if names:
+                self.log.debug("Enriched %d contact(s) for %s", len(names), company)
+            return names
+        except Exception as exc:  # noqa: BLE001
+            self.log.warning("contact enrichment extract failed for %s: %s", company, exc)
+            return []
 
     async def _mark_seen(self, content_hash: str) -> None:
         try:

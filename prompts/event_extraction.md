@@ -9,7 +9,7 @@ Fields:
 - cost: e.g. "Free", "$50", "TBD".
 - event_type: one of [conference, seminar, meetup, workshop, demo_day, panel, summit].
 - relevance_tags: array of the Lab2Scale focus areas this event clearly touches, from
-  [power_generation, energy_storage, power_electronics, semiconductors, deep_tech_infra]; [] if none clearly apply.
+  [nuclear_advanced_energy, water_cooling, power_electronics, autonomous_systems, advanced_manufacturing]; [] if none clearly apply.
 
 Content:
 {{CONTENT}}

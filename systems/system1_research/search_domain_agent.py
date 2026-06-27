@@ -213,6 +213,12 @@ class SearchDomainAgent:
                 await self._mark_seen(item["_hash"])
                 continue
 
+            # Notable contacts: if extraction named no founders, run one
+            # follow-up search to find who to reach out to.
+            researchers = data.get("researchers") or []
+            if not researchers:
+                researchers = await self._enrich_contacts(data.get("affiliation") or title)
+
             record = {
                 "id": item["_hash"],
                 "system": "research",
@@ -221,7 +227,7 @@ class SearchDomainAgent:
                 "title": title,
                 "summary": data.get("summary") or (item.get("content") or "")[:500],
                 "relevance_score": item["_score"],
-                "researchers": data.get("researchers") or [],
+                "researchers": researchers,
                 "affiliation": data.get("affiliation"),
                 "contact_info": data.get("contact_info"),
                 "source_url": item.get("url"),
@@ -243,6 +249,35 @@ class SearchDomainAgent:
                 errors += 1
         self.log.info("Saved %d new findings (%d duplicates, %d errors)", saved, skipped, errors)
         return saved, skipped, errors
+
+    async def _enrich_contacts(self, company: str) -> list[str]:
+        """When extraction named no founders, run ONE follow-up search to find
+        who to reach out to. Returns a list of names (possibly empty). Best
+        effort — any failure just yields no contacts, never breaks the run."""
+        company = (company or "").strip()
+        if not company:
+            return []
+        try:
+            results = await self.searcher.search(
+                f"{company} founders OR co-founder OR CEO", max_results=3
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.log.warning("contact enrichment search failed for %s: %s", company, exc)
+            return []
+        text = "\n\n".join(
+            f"{r.get('title', '')} {r.get('content', '')}" for r in (results or [])
+        ).strip()[:_EXTRACT_CHARS]
+        if not text:
+            return []
+        try:
+            data = await self.llm.extract_structured_data(text, self.focus_area)
+            names = data.get("researchers") or []
+            if names:
+                self.log.debug("Enriched %d contact(s) for %s", len(names), company)
+            return names
+        except Exception as exc:  # noqa: BLE001
+            self.log.warning("contact enrichment extract failed for %s: %s", company, exc)
+            return []
 
     async def _mark_seen(self, content_hash: str) -> None:
         try:

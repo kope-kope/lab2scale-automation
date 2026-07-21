@@ -11,3 +11,5 @@ aiosqlite>=0.20.0             # Async SQLite support
 apscheduler>=3.10.0           # Job scheduling (if running as daemon)
 tenacity>=8.2.0               # Retry logic for flaky scrapes
 lxml>=5.0.0                   # Faster HTML/XML parsing
+# Google Sheets leads tracker uses an Apps Script web app over plain HTTP
+# (httpx, already above) — no extra deps, and no service-account key needed.

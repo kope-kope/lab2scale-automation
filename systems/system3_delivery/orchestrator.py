@@ -8,6 +8,7 @@ logs a ``reports`` row.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from datetime import datetime, timezone
@@ -18,6 +19,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from lib.data_store import DataStore, db_path_from_url
 from lib.email_sender import EmailSender, parse_recipients
 from lib.llm import LLMFilter
+from lib.sheets_writer import GoogleSheetsWriter
 from systems.system3_delivery.summarizer import ReportSummarizer
 
 log = logging.getLogger("system3.orchestrator")
@@ -36,6 +38,7 @@ class DeliveryOrchestrator:
         llm: LLMFilter | None = None,
         email_sender: EmailSender | None = None,
         summarizer: ReportSummarizer | None = None,
+        sheets_writer: GoogleSheetsWriter | None = None,
         *,
         recipient: str | None = None,
         cc: list[str] | str | None = None,
@@ -50,6 +53,8 @@ class DeliveryOrchestrator:
         self.llm = llm or LLMFilter()
         self.summarizer = summarizer or ReportSummarizer(self.llm)
         self.email_sender = email_sender if email_sender is not None else EmailSender()
+        # Optional Google Sheet leads tracker (config-gated, fails soft).
+        self.sheets = sheets_writer if sheets_writer is not None else GoogleSheetsWriter()
         self.recipient = recipient or os.getenv(
             "REPORT_RECIPIENT", "team@lab-2-scale.com"
         )
@@ -93,6 +98,7 @@ class DeliveryOrchestrator:
         status = "sent"
         error_message: str | None = None
         sent = False
+        leads_added = 0
 
         if dry_run:
             FALLBACK_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -112,6 +118,14 @@ class DeliveryOrchestrator:
                           exc, FALLBACK_REPORT_PATH)
                 FALLBACK_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
                 FALLBACK_REPORT_PATH.write_text(html, encoding="utf-8")
+
+        # Also append the candidate companies to the leads Google Sheet (if
+        # configured). Independent of email — dedup means a retry never
+        # double-adds. Real runs only, not dry-run previews.
+        if not dry_run and self.sheets.configured and findings:
+            leads_added = await asyncio.get_event_loop().run_in_executor(
+                None, self.sheets.append_leads, findings
+            )
 
         # Only mark items reported when we actually delivered (or dry-ran for
         # preview). A real send failure leaves items unreported so the next
@@ -143,6 +157,7 @@ class DeliveryOrchestrator:
             "is_empty": is_empty,
             "recipient": self.recipient,
             "cc": self.cc,
+            "leads_added": leads_added,
             "subject": subject,
             "html_path": str(FALLBACK_REPORT_PATH) if (dry_run or not sent) else None,
         }

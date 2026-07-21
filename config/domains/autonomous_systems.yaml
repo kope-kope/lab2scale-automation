@@ -13,6 +13,24 @@ news_trade:
     method: rss
     notes: "Robotics + autonomy industry news, funding, company launches."
 
+mit_ecosystem:
+  - name: "MIT Schwarzman College of Computing — News"
+    url: "https://computing.mit.edu/news/"
+    method: web_scrape
+    notes: >
+      Requested source. Couldn't confirm an on-site RSS feed (computing.mit.edu
+      refuses non-browser connections), so scraped as an HTML news listing.
+      High-value MIT-ecosystem source: AI/computing spin-outs and research.
+
+  - name: "MIT News — Schwarzman College of Computing (RSS)"
+    url: "https://news.mit.edu/school/mit-schwarzman-college-computing"
+    rss_url: "https://news.mit.edu/rss/school/mit-schwarzman-college-computing"
+    method: rss
+    notes: >
+      Official MIT News RSS feed for the College of Computing (standard MIT News
+      /rss/school/ pattern). Same subject as computing.mit.edu/news, but a real
+      feed. Fails soft if the URL 404s.
+
 arxiv:
   - name: "arXiv cs.RO - Robotics"
     url: "https://arxiv.org/list/cs.RO/recent"

@@ -1,37 +1,29 @@
-"""Append deal-flow leads to a Google Sheet via a service account.
+"""Append deal-flow leads to a Google Sheet via a Google Apps Script web app.
 
-Optional + config-gated: does nothing unless BOTH env vars are set —
-``GOOGLE_SERVICE_ACCOUNT_JSON`` (the service-account key JSON) and
-``LEADS_SHEET_ID``. Fails soft: a sheet error is logged and never breaks the
-weekly run.
+Why Apps Script and not a service account? Many Google Workspace orgs (incl.
+berkeley.edu) block service-account key creation via the org policy
+``iam.disableServiceAccountKeyCreation``. A bound Apps Script web app needs no
+Google Cloud project and no downloadable key — it runs as the sheet's owner and
+we just POST rows to its URL.
 
-Setup (one time):
-  1. Google Cloud Console → APIs & Services → enable the *Google Sheets API*.
-  2. Create a *service account*; create a key → download the JSON.
-  3. Open your Google Sheet → Share → paste the service account's email
-     (…@…​.iam.gserviceaccount.com) → give it *Editor*.
-  4. Set env:
-       GOOGLE_SERVICE_ACCOUNT_JSON = <the entire JSON file contents>
-       LEADS_SHEET_ID             = <the id from the sheet URL>
-       LEADS_SHEET_TAB            = Leads   (optional; default "Leads")
+Optional + config-gated on ``LEADS_WEBAPP_URL`` (+ optional
+``LEADS_WEBAPP_SECRET``). Fails soft: any error is logged and never breaks the
+weekly run. The web app itself dedups (by company + URL) and appends.
+
+Setup: see ``deploy/leads_webapp.gs`` — paste it into the Sheet's Apps Script
+(Extensions → Apps Script), set SECRET, Deploy → New deployment → Web app
+(execute as you, access "Anyone"), then put the /exec URL in LEADS_WEBAPP_URL.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from datetime import datetime, timezone
 
+import httpx
+
 log = logging.getLogger("lib.sheets")
-
-_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-# Column order written to the sheet. "Status" is yours to edit by hand.
-HEADER = [
-    "Date", "Company", "Sector", "Stage", "Why it fits",
-    "Contacts", "Source URL", "Relevance", "Status",
-]
 
 # Plain sector names (no emoji) for the sheet.
 SECTOR_LABELS = {
@@ -54,97 +46,69 @@ def _company_name(finding: dict) -> str:
 
 
 class GoogleSheetsWriter:
-    """Appends findings (candidate companies) to a Google Sheet as leads.
-
-    ``client`` is injectable for tests (any object exposing
-    ``open_by_key(id).worksheet(tab)`` with a gspread-like worksheet).
-    """
+    """POSTs findings (candidate companies) to an Apps Script web app that
+    appends them to a Google Sheet as leads. ``transport`` is injectable for
+    tests (an ``httpx`` transport)."""
 
     def __init__(
         self,
-        credentials_json: str | None = None,
-        sheet_id: str | None = None,
-        tab: str | None = None,
-        client=None,
+        webapp_url: str | None = None,
+        secret: str | None = None,
+        *,
+        timeout: int = 20,
+        transport=None,
     ):
-        self._creds_json = (
-            credentials_json if credentials_json is not None
-            else os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+        self.webapp_url = (
+            webapp_url if webapp_url is not None else os.getenv("LEADS_WEBAPP_URL")
         )
-        self.sheet_id = sheet_id or os.getenv("LEADS_SHEET_ID")
-        self.tab = tab or os.getenv("LEADS_SHEET_TAB", "Leads")
-        self._client = client
+        self.secret = (
+            secret if secret is not None else os.getenv("LEADS_WEBAPP_SECRET", "")
+        )
+        self._timeout = timeout
+        self._transport = transport
 
     @property
     def configured(self) -> bool:
-        """True when we have a sheet id and a way to authenticate."""
-        return bool(self.sheet_id and (self._creds_json or self._client is not None))
+        return bool(self.webapp_url)
 
-    def _get_client(self):
-        if self._client is not None:
-            return self._client
-        import gspread  # noqa: WPS433 — lazy so import-time needs no creds
-        from google.oauth2.service_account import Credentials
-
-        info = json.loads(self._creds_json)
-        creds = Credentials.from_service_account_info(info, scopes=_SCOPES)
-        self._client = gspread.authorize(creds)
-        return self._client
-
-    def _worksheet(self, client):
-        sheet = client.open_by_key(self.sheet_id)
-        try:
-            return sheet.worksheet(self.tab)
-        except Exception:  # noqa: BLE001 — tab doesn't exist yet
-            return sheet.add_worksheet(title=self.tab, rows=1000, cols=len(HEADER))
+    def _lead_rows(self, findings: list[dict]) -> list[dict]:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        rows: list[dict] = []
+        for f in findings:
+            contacts = ", ".join(f.get("researchers") or [])
+            if f.get("contact_info"):
+                contacts = f"{contacts} · {f['contact_info']}" if contacts else f["contact_info"]
+            rows.append({
+                "date": today,
+                "company": _company_name(f),
+                "sector": SECTOR_LABELS.get(f.get("focus_area"), f.get("focus_area") or ""),
+                "stage": f.get("trl_estimate") or "",
+                "why": (f.get("summary") or "")[:600],
+                "contacts": contacts,
+                "url": (f.get("source_url") or "").strip(),
+                "relevance": f.get("relevance_score") or "",
+            })
+        return rows
 
     def append_leads(self, findings: list[dict]) -> int:
-        """Append findings as lead rows, skipping companies already in the sheet
-        (dedup by company + source URL). Returns rows added. Synchronous
-        (gspread is sync); the caller runs it in an executor. Never raises."""
+        """POST leads to the web app; it dedups + appends and returns how many
+        were added. Synchronous (the caller runs it in an executor). Never
+        raises — returns 0 on any problem."""
         if not self.configured or not findings:
             return 0
+        payload = {"secret": self.secret, "leads": self._lead_rows(findings)}
         try:
-            ws = self._worksheet(self._get_client())
-            existing = ws.get_all_values()
-            if not existing:
-                ws.append_row(HEADER, value_input_option="USER_ENTERED")
-                existing = [HEADER]
-
-            seen: set[tuple[str, str]] = set()
-            for row in existing[1:]:
-                company = (row[1] if len(row) > 1 else "").strip().lower()
-                url = (row[6] if len(row) > 6 else "").strip().lower()
-                seen.add((company, url))
-
-            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            rows: list[list] = []
-            for f in findings:
-                company = _company_name(f)
-                url = (f.get("source_url") or "").strip()
-                key = (company.lower(), url.lower())
-                if key in seen:
-                    continue
-                seen.add(key)
-                contacts = ", ".join(f.get("researchers") or [])
-                if f.get("contact_info"):
-                    contacts = f"{contacts} · {f['contact_info']}" if contacts else f["contact_info"]
-                rows.append([
-                    today,
-                    company,
-                    SECTOR_LABELS.get(f.get("focus_area"), f.get("focus_area") or ""),
-                    f.get("trl_estimate") or "",
-                    (f.get("summary") or "")[:600],
-                    contacts,
-                    url,
-                    f.get("relevance_score") or "",
-                    "New",
-                ])
-
-            if rows:
-                ws.append_rows(rows, value_input_option="USER_ENTERED")
-            log.info("Google Sheet: appended %d new lead(s) to '%s'", len(rows), self.tab)
-            return len(rows)
+            with httpx.Client(
+                timeout=self._timeout, transport=self._transport, follow_redirects=True
+            ) as client:
+                resp = client.post(self.webapp_url, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+            added = int(data.get("added", 0))
+            if data.get("error"):
+                log.error("Leads web app returned error: %s", data["error"])
+            log.info("Google Sheet (Apps Script): appended %d new lead(s)", added)
+            return added
         except Exception as exc:  # noqa: BLE001 — never break the weekly run
-            log.error("Google Sheets write failed: %s", exc)
+            log.error("Google Sheets web app write failed: %s", exc)
             return 0

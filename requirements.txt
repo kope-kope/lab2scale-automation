@@ -11,3 +11,5 @@ aiosqlite>=0.20.0             # Async SQLite support
 apscheduler>=3.10.0           # Job scheduling (if running as daemon)
 tenacity>=8.2.0               # Retry logic for flaky scrapes
 lxml>=5.0.0                   # Faster HTML/XML parsing
+gspread>=6.0.0               # Google Sheets leads tracker (optional)
+google-auth>=2.28.0          # Service-account auth for Google Sheets

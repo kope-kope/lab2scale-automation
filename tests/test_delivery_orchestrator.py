@@ -166,6 +166,66 @@ def test_no_cc_when_unset(monkeypatch):
     assert "cc" not in sent
 
 
+def test_writes_leads_to_google_sheet_on_real_run():
+    """On a real (non-dry-run) send, findings are appended to the leads sheet."""
+    class FakeSheets:
+        def __init__(self):
+            self.written = None
+
+        @property
+        def configured(self):
+            return True
+
+        def append_leads(self, findings):
+            self.written = findings
+            return len(findings)
+
+    async def body():
+        store = await _seeded_store()
+        llm = FakeLLM()
+        sheets = FakeSheets()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm,
+            summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key="re_test", client=FakeResendClient()),
+            sheets_writer=sheets,
+            recipient="team@example.com",
+        )
+        result = await orch.run()
+        return result, sheets
+
+    result, sheets = asyncio.run(body())
+    assert result["leads_added"] == 1          # the one seeded finding
+    assert sheets.written is not None and len(sheets.written) == 1
+
+
+def test_dry_run_does_not_write_to_sheet():
+    """Dry-run previews must not touch the real leads sheet."""
+    class FakeSheets:
+        configured = True
+        def __init__(self):
+            self.calls = 0
+        def append_leads(self, findings):
+            self.calls += 1
+            return len(findings)
+
+    async def body():
+        store = await _seeded_store()
+        llm = FakeLLM()
+        sheets = FakeSheets()
+        orch = DeliveryOrchestrator(
+            store=store, llm=llm, summarizer=ReportSummarizer(llm),
+            email_sender=EmailSender(api_key=None, client=None),
+            sheets_writer=sheets, recipient="team@example.com",
+        )
+        result = await orch.run(dry_run=True)
+        return result, sheets
+
+    result, sheets = asyncio.run(body())
+    assert result["leads_added"] == 0
+    assert sheets.calls == 0
+
+
 def test_dry_run_writes_html_and_marks_reported():
     """Dry-run still marks items reported (preview = published from our POV)."""
     async def body():

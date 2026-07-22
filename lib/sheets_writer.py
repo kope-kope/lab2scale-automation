@@ -8,7 +8,7 @@ we just POST rows to its URL.
 
 Optional + config-gated on ``LEADS_WEBAPP_URL`` (+ optional
 ``LEADS_WEBAPP_SECRET``). Fails soft: any error is logged and never breaks the
-weekly run. The web app itself dedups (by company + URL) and appends.
+weekly run. The web app itself dedups (by normalized company name) and appends.
 
 Setup: see ``deploy/leads_webapp.gs`` — paste it into the Sheet's Apps Script
 (Extensions → Apps Script), set SECRET, Deploy → New deployment → Web app

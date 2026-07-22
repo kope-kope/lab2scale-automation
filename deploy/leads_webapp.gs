@@ -37,18 +37,20 @@ function doPost(e) {
     let sh = ss.getSheetByName(TAB) || ss.insertSheet(TAB);
     if (sh.getLastRow() === 0) sh.appendRow(HEADER);
 
-    // Existing (company|url) keys for dedup.
+    // Dedup on the normalized COMPANY NAME only (column B), so the same
+    // company surfaced from a different source URL is never re-added.
     const values = sh.getDataRange().getValues();
     const seen = {};
     for (let i = 1; i < values.length; i++) {
-      seen[key_(values[i][1], values[i][6])] = true;
+      const k = key_(values[i][1]);
+      if (k) seen[k] = true;
     }
 
     const rows = [];
     (body.leads || []).forEach(function (l) {
-      const k = key_(l.company, l.url);
-      if (seen[k]) return;
-      seen[k] = true;
+      const k = key_(l.company);
+      if (k && seen[k]) return;   // already have this company
+      if (k) seen[k] = true;      // (empty names aren't deduped — always append)
       rows.push([l.date || '', l.company || '', l.sector || '', l.stage || '',
                  l.why || '', l.contacts || '', l.url || '', l.relevance || '', 'New']);
     });
@@ -62,8 +64,15 @@ function doPost(e) {
   }
 }
 
-function key_(company, url) {
-  return String(company || '').toLowerCase().trim() + '|' + String(url || '').toLowerCase().trim();
+// Normalize a company name for dedup: lowercase, drop legal suffixes
+// (Inc/LLC/Corp/Ltd/Co) and all punctuation/spaces. "Ferveret, Inc." and
+// "ferveret" collapse to the same key.
+function key_(company) {
+  return String(company || '')
+    .toLowerCase()
+    .replace(/\b(inc|llc|corp|corporation|ltd|limited|co)\b\.?/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 }
 
 function json_(obj) {
